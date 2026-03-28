@@ -1,0 +1,23 @@
+name: kMoney
+version: 0.1
+main: me.kwlew.kMoney
+api-version: '1.21'
+
+commands:
+  money:
+    description: A command that lets you see how much money you have.
+    usage: /money
+
+permissions:
+  money.admin.set:
+    description: Allows setting money.
+    default: op
+  money.admin.add:
+    description: Allows to add money.
+    default: op
+  money.admin.reload:
+    description: Allows reloading the config.
+    default: op
+  money.admin:
+    description: Player is an admin.
+    default: op
