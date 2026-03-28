@@ -7,6 +7,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NonNull;
 
 public abstract class BaseCommand implements CommandExecutor {
 
@@ -17,7 +18,7 @@ public abstract class BaseCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NonNull CommandSender sender, @NonNull Command command, @NonNull String label, String[] args) {
 
         if (isPlayerOnly() && !(sender instanceof Player player)) {
             sender.sendMessage(Component.text("Only players can use this command!", NamedTextColor.RED));
@@ -33,17 +34,8 @@ public abstract class BaseCommand implements CommandExecutor {
         return true;
     }
 
-
-    protected Player getPlayer(CommandSender sender) {
-        return (Player) sender;
-    }
-
     protected void sendError(CommandSender sender, String msg) {
         sender.sendMessage(Component.text(msg, NamedTextColor.RED));
-    }
-
-    protected void sendSuccess(CommandSender sender, String msg) {
-        sender.sendMessage(Component.text(msg, NamedTextColor.GREEN));
     }
 
     protected Player getTarget(CommandSender sender, String name) {
