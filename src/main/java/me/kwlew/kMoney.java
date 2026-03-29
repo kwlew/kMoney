@@ -1,6 +1,7 @@
 package me.kwlew;
 import me.kwlew.commands.MoneyCommand;
 import me.kwlew.listeners.JoinListener;
+import me.kwlew.commands.PayCommand;
 
 import me.kwlew.listeners.QuitListener;
 import me.kwlew.managers.MoneyManager;
@@ -28,15 +29,21 @@ public class kMoney extends JavaPlugin {
         }
 
         messageManager = new MessageManager(this);
-
         moneyManager = new MoneyManager(this);
+
         MoneyCommand moneyCommand = new MoneyCommand(this);
+        PayCommand payCommand = new PayCommand(this);
 
         getServer().getPluginManager().registerEvents(new JoinListener(this), this);
         getServer().getPluginManager().registerEvents(new QuitListener(this), this);
 
         Objects.requireNonNull(getCommand("money")).setExecutor(moneyCommand);
         Objects.requireNonNull(getCommand("money")).setTabCompleter(moneyCommand);
+
+        Objects.requireNonNull(getCommand("pay")).setExecutor(payCommand);
+        Objects.requireNonNull(getCommand("pay")).setTabCompleter(payCommand);
+
+        getMoneyManager().loadAll();
 
         long time = System.currentTimeMillis() - start;
         getLogger().info("\u001B[96mkMoney enabled!\u001B[0m");
@@ -67,6 +74,11 @@ public class kMoney extends JavaPlugin {
 
     public void sayReload() {
         getLogger().info("\u001B[96mkMoney reloaded!\u001B[0m");
+    }
+
+    public void sayReloading() {
+        getLogger().info("\u001B[96mkMoney reloading...\u001B[0m");
+        getLogger().info("\u001B[96mSaving player data...\u001B[0m");
     }
 
 }

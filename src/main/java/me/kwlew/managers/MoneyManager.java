@@ -1,5 +1,6 @@
 package me.kwlew.managers;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -9,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 
 import me.kwlew.kMoney;
+import org.bukkit.entity.Player;
 
 public class MoneyManager {
 
@@ -56,6 +58,20 @@ public class MoneyManager {
         }
     }
 
+    public void saveAll() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            UUID uuid = player.getUniqueId();
+            savePlayer(uuid);
+        }
+    }
+
+    public void loadAll() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            UUID uuid = player.getUniqueId();
+            loadPlayer(uuid);
+        }
+    }
+
     public void unloadPlayer(UUID uuid) {
         savePlayer(uuid);
         playerData.remove(uuid);
@@ -84,11 +100,22 @@ public class MoneyManager {
         setMoney(uuid, current+amount);
     }
 
+    public boolean isNumberInvalid(int amount) {
+        return amount < 0;
+    }
+
+    public boolean canPay(int amount, UUID payer) {
+        return getMoney(payer)-amount >= 0;
+    }
+
     public void removeMoney(UUID uuid, int amount) {
         if (!playerData.containsKey(uuid)){
             loadPlayer(uuid);
         }
         int current = getMoney(uuid);
+        if (current-amount < 0) {
+            amount -= amount-current;
+        }
         setMoney(uuid, current-amount);
     }
 }

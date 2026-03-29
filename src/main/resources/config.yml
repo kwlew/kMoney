@@ -3,21 +3,7 @@
 
 # This sets the default money any player will receive upon logging in for the first time.
 player-default-money: 100
-
-# This allows you to customize any of the messages of the plugin!
-# Placeholders:
-# {money} Shows the money you have.
-# {player} Shows the name of the player you added or set money to.
-# {amount} Amount of money involved in the transaction.
-
-prefix: "&8[&aMoney&8] "
-
-messages:
-  balance: "{prefix}&aYou have: &6${money}"
-  player-not-found: "{prefix}&cPlayer not found!"
-  invalid-number: "{prefix}&cInvalid number!"
-  no-permission: "{prefix}&cYou don't have permission!"
-  add-success: "{prefix}&aAdded &6${amount} &ato &e${player}"
-  set-success: "{prefix}&aSet &e${player}'s money to &6${amount}"
-  received: "{prefix}&aYou received &6${amount}&a! Now: &6${money}"
-  reloaded: "{prefix}&aConfig reloaded!"
+# This sets the cooldowns for players.
+cooldowns:
+  normal: 3
+  vip: 1 #money.vip.cooldown
