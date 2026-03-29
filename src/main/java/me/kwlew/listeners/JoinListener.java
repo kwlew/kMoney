@@ -28,7 +28,7 @@ public class JoinListener implements Listener {
         if (player.hasPermission("money.admin")) {
 
             Component message = serializer.deserialize(
-                    "&aYou are using &bv0.0.1 &aof kMoney!\n&aCheck for updates: "
+                    "&aYou are using &bv0.0.2 &aof kMoney!\n&aCheck for updates: "
             ).append(
                     Component.text("Here")
                             .color(NamedTextColor.AQUA)
