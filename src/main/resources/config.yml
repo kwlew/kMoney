@@ -1,9 +1,5 @@
-# This is the configuration yml, alter whatever you deem fit for your server.
-# Be careful with values as the plugin is still unstable.
+# This is the config for the plugin, here you can change most of how it looks and works.
+# Player default starting money.
+player-default-money: 100.0
 
-# This sets the default money any player will receive upon logging in for the first time.
-player-default-money: 100
-# This sets the cooldowns for players.
-cooldowns:
-  normal: 3
-  vip: 1 #money.vip.cooldown
+currency-symbol: "$"

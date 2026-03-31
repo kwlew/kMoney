@@ -1,84 +1,98 @@
 package me.kwlew;
-import me.kwlew.commands.MoneyCommand;
-import me.kwlew.listeners.JoinListener;
-import me.kwlew.commands.PayCommand;
 
+import me.kwlew.api.EconomyService;
+import me.kwlew.commands.MoneyCommand;
+import me.kwlew.commands.PayStandaloneCommand;
+import me.kwlew.commands.subcommands.PayCommand;
+import me.kwlew.config.ConfigManager;
+import me.kwlew.config.MessageManager;
+import me.kwlew.economy.MoneyManager;
+import me.kwlew.economy.storage.YamlStorage;
+import me.kwlew.listeners.JoinListener;
+import me.kwlew.listeners.MoneyRedeemListener;
 import me.kwlew.listeners.QuitListener;
-import me.kwlew.managers.MoneyManager;
-import me.kwlew.managers.MessageManager;
+import me.kwlew.placeholder.MoneyExpansion;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.HashSet;
 import java.util.Objects;
-import java.io.File;
+import java.util.Set;
+import java.util.UUID;
 
 public class kMoney extends JavaPlugin {
 
-    private File playersFolder;
-    private MoneyManager moneyManager;
+    private ConfigManager configManager;
+    private EconomyService economy;
     private MessageManager messageManager;
+
+    private final Set<UUID> adminMessageDisabled = new HashSet<>();
+
+    public Set<UUID> getAdminMessageDisabled() {
+        return adminMessageDisabled;
+    }
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         long start = System.currentTimeMillis();
+        configManager = new ConfigManager(this);
 
-        playersFolder = new File(getDataFolder(), "players");
-        if (!playersFolder.exists()) {
-            //noinspection ResultOfMethodCallIgnored
-            playersFolder.mkdirs();
-        }
+        YamlStorage storage = new YamlStorage(this);
+        economy = new MoneyManager(storage, configManager);
+
+        getServer().getServicesManager().register(EconomyService.class,
+                economy,
+                this,
+                org.bukkit.plugin.ServicePriority.Normal
+        );
 
         messageManager = new MessageManager(this);
-        moneyManager = new MoneyManager(this);
-
-        MoneyCommand moneyCommand = new MoneyCommand(this);
-        PayCommand payCommand = new PayCommand(this);
+        MoneyCommand moneyCommand = new MoneyCommand(economy, messageManager, configManager, this);
+        PayCommand payCommand = new PayCommand(economy, messageManager, configManager);
 
         getServer().getPluginManager().registerEvents(new JoinListener(this), this);
         getServer().getPluginManager().registerEvents(new QuitListener(this), this);
+        getServer().getPluginManager().registerEvents(new MoneyRedeemListener(economy, this, messageManager), this);
 
-        Objects.requireNonNull(getCommand("money")).setExecutor(moneyCommand);
+
+        Objects.requireNonNull(getCommand("pay")).setExecutor(new PayStandaloneCommand(payCommand));
         Objects.requireNonNull(getCommand("money")).setTabCompleter(moneyCommand);
+        Objects.requireNonNull(getCommand("money")).setExecutor(moneyCommand);
 
-        Objects.requireNonNull(getCommand("pay")).setExecutor(payCommand);
-        Objects.requireNonNull(getCommand("pay")).setTabCompleter(payCommand);
-
-        getMoneyManager().loadAll();
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new MoneyExpansion(this).register();
+            getLogger().info("\u001B[36mkMoney hooked to [PlaceholderAPI]\u001B[0m");
+        }
 
         long time = System.currentTimeMillis() - start;
-        getLogger().info("\u001B[96mkMoney enabled!\u001B[0m");
-        getLogger().info("\u001B[32mTook \u001B[32m" + time + "ms!\u001B[37m");
-    }
-
-    public File getPlayersFolder() {
-        return playersFolder;
+        startTime(time);
     }
 
     @Override
     public void onDisable() {
+        getLogger().info("\u001B[36mDisabling kMoney...\u001B[0m");
 
-        getLogger().info("kMoney disabled!");
+        if (economy instanceof MoneyManager manager) {
+            manager.saveAll();
+        }
+        saveConfig();
+    }
+
+    private void startTime(long time) {
+        getLogger().info("\u001B[36mkMoney enabled! \u001B[90m(Took \u001B[32m"
+                + time + "ms\u001B[90m)\u001B[0m");
+    }
+
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+
+    public EconomyService getEconomy() {
+        return economy;
     }
 
     public MessageManager getMessageManager() {
         return messageManager;
-    }
-
-    public MoneyManager getMoneyManager() {
-        return moneyManager;
-    }
-
-    public void setMessageManager(MessageManager messageManager) {
-        this.messageManager = messageManager;
-    }
-
-    public void sayReload() {
-        getLogger().info("\u001B[96mkMoney reloaded!\u001B[0m");
-    }
-
-    public void sayReloading() {
-        getLogger().info("\u001B[96mkMoney reloading...\u001B[0m");
-        getLogger().info("\u001B[96mSaving player data...\u001B[0m");
     }
 
 }

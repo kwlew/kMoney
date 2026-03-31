@@ -1,22 +1,30 @@
-# This allows you to customize any of the messages of the plugin!
-# Placeholders:
-# ${money} Shows the money you have.
-# ${player} Shows the name of the player you added or set money to.
-# ${amount} Amount of money involved in the transaction.
+prefix: '&8[&4kMoney&8] '
 
-prefix: "&8[&aMoney&8] "
 
-messages:
-  balance: "{prefix}&aYou have: &6$${money}"
-  player-not-found: "{prefix}&cPlayer not found!"
-  invalid-number: "{prefix}&cInvalid number!"
-  no-permission: "{prefix}&cYou don't have permission!"
-  add-success: "{prefix}&aAdded &6$${amount} &ato &e${player}"
-  remove-success: "{prefix}&aRemoved &6$${amount}&a from &e${player}"
-  set-success: "{prefix}&aSet &e${player}'s money to &6$${amount}"
-  received: "{prefix}&aYou received &6${amount}&a! Now: &6$${money}"
-  pay-cooldown: "{prefix}&aYou are on cooldown! &c${time}"
-  reloaded: "{prefix}&aConfig reloaded!"
-  money-player: "{prefix}&e${player}&a has &6$${money}"
-  player-pay: "{prefix}&aYou paid &6$${amount} &ato &e${player}"
-  player-paid: "{prefix}&aYou got paid &6$${amount}&a from &e${player}"
+reloading: '&bReloading kMoney...'
+reloaded: '&bReload complete!'
+balance: '&eYour balance: &a%balance%'
+added: '&aAdded &e%amount% &ato %player%'
+removed: '&cRemoved &e%amount%&c from %player%'
+set: '&eSet %player%''s balance to &a%amount%'
+pay-sent: '&aYou sent &e%amount% &ato %player%'
+pay-received: '&aYou received &e%amount%&a from %player%'
+admin-on: '&aUpdate message &2&lON'
+admin-off: '&aUpdate message &4&lOFF'
+
+check-redeem: '&aYou redeemed &e%amount%&a.'
+check-withdraw: '&aYou withdrew &e%amount%&a.'
+check-create-name: '&a&lCheck'
+check-create-creator: '&aCreated by: &e%player%' # Always have the %player%
+check-create-value: '&aValue: &2%amount%' # Always have the %amount%
+
+
+invalid-usage-pay: '&cUsage: /pay <player> <amount> or /money pay <player> <amount>'
+invalid-usage-add: '&cUsage: /money add <player> <amount>'
+invalid-usage-set: '&cUsage: /money set <player> <amount>'
+invalid-usage-remove: '&cUsage: /money remove <player> <amount>'
+invalid-usage-admin: '&cUsage: /money admin <on/off>'
+not-enough-money: '&cYou do not have enough money.'
+no-player: '&cPlayer not found.'
+invalid-number: '&cInvalid number.'
+no-permission: '&cYou do not have permission.'

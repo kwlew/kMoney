@@ -16,6 +16,9 @@ public class QuitListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerJoinEvent event) {
-        plugin.getMoneyManager().unloadPlayer(event.getPlayer().getUniqueId());
+        plugin.getEconomy().setBalance(
+                event.getPlayer().getUniqueId(),
+                plugin.getEconomy().getBalance(event.getPlayer().getUniqueId())
+        );
     }
 }

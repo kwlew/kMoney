@@ -10,25 +10,36 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import me.kwlew.kMoney;
+import me.kwlew.api.EconomyService;
+
+import java.util.UUID;
 
 public class JoinListener implements Listener {
+
+    private final EconomyService economy;
     private final kMoney plugin;
 
     public JoinListener(kMoney plugin) {
+        this.economy = plugin.getEconomy();
         this.plugin = plugin;
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        plugin.getMoneyManager().loadPlayer(event.getPlayer().getUniqueId());
         Player player = event.getPlayer();
 
         LegacyComponentSerializer serializer = LegacyComponentSerializer.legacyAmpersand();
+        UUID uuid = player.getUniqueId();
 
-        if (player.hasPermission("money.admin")) {
+        if (!economy.hasAccount(uuid)) {
+            economy.createAccount(uuid);
+        }
+
+        if (player.hasPermission("money.admin.update")
+                && !plugin.getAdminMessageDisabled().contains(uuid)) {
 
             Component message = serializer.deserialize(
-                    "&aYou are using &bv0.0.2 &aof kMoney!\n&aCheck for updates: "
+                    "&aYou are using &bv0.1.0 &aof kMoney!\n&aCheck for updates: "
             ).append(
                     Component.text("Here")
                             .color(NamedTextColor.AQUA)

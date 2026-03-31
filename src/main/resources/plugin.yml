@@ -1,26 +1,20 @@
 name: kMoney
-version: 0.0.2
+version: 0.1.0
 main: me.kwlew.kMoney
 api-version: '1.21'
+soft-depend: ["PlaceholderAPI", "Vault"]
+
 
 commands:
   money:
-    description: A command that lets you see how much money you have.
-    usage: /money <balance/set/add/remove> <nick>
+    description: Main money command
+    usage: /money <add|remove|set|balance>
+    aliases: [eco, balance]
   pay:
-    description: A command used to pay other players!
-    usage: /pay <nick> <amount>
+    description: Pay another player.
+    usage: /pay <player> <amount>
 
 permissions:
-  money.admin.set:
-    description: Allows setting money to players.
-    default: op
-  money.admin.add:
-    description: Allows adding money to players.
-    default: op
-  money.admin.reload:
-    description: Allows reloading the config.
-    default: op
-  money.admin.remove:
-    description: Allows removing money from players
+  kmoney.admin:
+    description: Allows admin money commands
     default: op
