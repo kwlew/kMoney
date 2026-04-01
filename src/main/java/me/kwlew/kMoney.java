@@ -23,7 +23,6 @@ public class kMoney extends JavaPlugin {
 
     private ConfigManager configManager;
     private EconomyService economy;
-    private MessageManager messageManager;
 
     private final Set<UUID> adminMessageDisabled = new HashSet<>();
 
@@ -38,7 +37,7 @@ public class kMoney extends JavaPlugin {
         configManager = new ConfigManager(this);
 
         YamlStorage storage = new YamlStorage(this);
-        economy = new MoneyManager(storage, configManager);
+        economy = new MoneyManager(storage, configManager, this);
 
         getServer().getServicesManager().register(EconomyService.class,
                 economy,
@@ -46,7 +45,7 @@ public class kMoney extends JavaPlugin {
                 org.bukkit.plugin.ServicePriority.Normal
         );
 
-        messageManager = new MessageManager(this);
+        MessageManager messageManager = new MessageManager(this);
         MoneyCommand moneyCommand = new MoneyCommand(economy, messageManager, configManager, this);
         PayCommand payCommand = new PayCommand(economy, messageManager, configManager);
 
@@ -90,9 +89,4 @@ public class kMoney extends JavaPlugin {
     public EconomyService getEconomy() {
         return economy;
     }
-
-    public MessageManager getMessageManager() {
-        return messageManager;
-    }
-
 }

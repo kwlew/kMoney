@@ -7,15 +7,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class YamlStorage implements EconomyStorage {
 
     private final File folder;
-    private final JavaPlugin plugin;
+
+    private final Map<UUID, FileConfiguration> cache = new ConcurrentHashMap<>();
+
+    private final Map<UUID, Object> locks = new ConcurrentHashMap<>();
+
 
     public YamlStorage(JavaPlugin plugin) {
-
-        this.plugin = plugin;
         this.folder = new File(plugin.getDataFolder(), "players");
 
         if (!folder.exists()) {
@@ -28,27 +32,37 @@ public class YamlStorage implements EconomyStorage {
         return new File(folder, uuid.toString() + ".yml");
     }
 
-    private FileConfiguration getConfig(UUID uuid) {
-        return YamlConfiguration.loadConfiguration(getFile(uuid));
+    private Object getLock(UUID uuid) {
+        return locks.computeIfAbsent(uuid, u -> new Object());
+    }
+
+    private FileConfiguration getCachedConfig(UUID uuid) {
+        return cache.computeIfAbsent(uuid, u ->
+                YamlConfiguration.loadConfiguration(getFile(u))
+        );
     }
 
     @Override
     public double getBalance(UUID uuid) {
-        FileConfiguration config = getConfig(uuid);
-        return config.getDouble("balance", 0.0);
+        synchronized (getLock(uuid)) {
+            FileConfiguration config = getCachedConfig(uuid);
+            return config.getDouble("balance", 0.0);
+        }
     }
 
     @Override
     public void setBalance(UUID uuid, double amount) {
-        File file = getFile(uuid);
-        FileConfiguration config = getConfig(uuid);
+        synchronized (getLock(uuid)) {
+            File file = getFile(uuid);
+            FileConfiguration config = getCachedConfig(uuid);
 
-        config.set("balance", amount);
+            config.set("balance", amount);
 
-        try {
-            config.save(file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            try {
+                config.save(file);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to save balance for " + uuid);
+            }
         }
     }
 
@@ -59,13 +73,24 @@ public class YamlStorage implements EconomyStorage {
 
     @Override
     public void createAccount(UUID uuid) {
-        if (!hasAccount(uuid)) {
-            setBalance(uuid, 0.0);
+        synchronized (getLock(uuid)) {
+            if (!hasAccount(uuid)) {
+                setBalance(uuid, 0.0);
+            }
         }
     }
 
     @Override
     public void save() {
-        // Not needed (we save per operation)
+        for (UUID uuid : cache.keySet()) {
+            synchronized (getLock(uuid)) {
+                try {
+                    cache.get(uuid).save(getFile(uuid));
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to save " + uuid, e);
+                }
+            }
+        }
     }
+
 }

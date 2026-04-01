@@ -35,6 +35,8 @@ public class JoinListener implements Listener {
             economy.createAccount(uuid);
         }
 
+        economy.getBalance(uuid);
+
         if (player.hasPermission("money.admin.update")
                 && !plugin.getAdminMessageDisabled().contains(uuid)) {
 
