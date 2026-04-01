@@ -7,6 +7,7 @@ import me.kwlew.config.MessageManager;
 import me.kwlew.utils.MoneyParser;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -44,7 +45,7 @@ public class WithdrawCommand implements SubCommand {
         }
 
         if (args.length < 1) {
-            player.sendMessage("Usage: /money withdraw <amount>");
+            player.sendMessage(messages.getWithPrefix("invalid-usage-withdraw"));
             return;
         }
 
@@ -53,23 +54,26 @@ public class WithdrawCommand implements SubCommand {
         try {
             amount = MoneyParser.parse(args[0]);
         } catch (Exception e) {
-            player.sendMessage("Invalid amount.");
+            player.sendMessage(messages.getWithPrefix("invalid-amount"));
             return;
         }
 
         if (amount <= 0) {
-            player.sendMessage("Invalid amount.");
+            player.sendMessage(messages.getWithPrefix("invalid-amount"));
             return;
         }
 
         double balance = economy.getBalance(player.getUniqueId());
 
         if (balance < amount) {
-            player.sendMessage("Not enough money.");
+            player.sendMessage(messages.getWithPrefix("not-enough-money"));
             return;
         }
 
-        economy.removeBalance(player.getUniqueId(), amount);
+        if (player.getInventory().firstEmpty() == -1) {
+            player.sendMessage(messages.getWithPrefix("inventory-full"));
+            return;
+        }
 
         ItemStack paper = new ItemStack(Material.PAPER);
         ItemMeta meta = paper.getItemMeta();
@@ -95,13 +99,15 @@ public class WithdrawCommand implements SubCommand {
 
         paper.setItemMeta(meta);
 
+        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
         player.getInventory().addItem(paper);
+        economy.removeBalance(player.getUniqueId(), amount);
 
         player.sendMessage(messages.getWithPrefix("check-withdraw", "%amount%", formatted));
     }
 
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
-        return List.of("100", "1k", "10k", "1m");
+        return List.of("1K", "1M");
     }
 }

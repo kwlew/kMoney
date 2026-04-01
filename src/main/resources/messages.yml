@@ -1,11 +1,12 @@
-prefix: '&8[&4kMoney&8] '
+# This is the config for the messages shown by the plugin!
 
+prefix: '&8[&4kMoney&8] '
 
 reloading: '&bReloading kMoney...'
 reloaded: '&bReload complete!'
 balance: '&eYour balance: &a%balance%'
 added: '&aAdded &e%amount% &ato %player%'
-removed: '&cRemoved &e%amount%&c from %player%'
+removed: '&aRemoved &e%amount%&a from %player%'
 set: '&eSet %player%''s balance to &a%amount%'
 pay-sent: '&aYou sent &e%amount% &ato %player%'
 pay-received: '&aYou received &e%amount%&a from %player%'
@@ -18,12 +19,13 @@ check-create-name: '&a&lCheck'
 check-create-creator: '&aCreated by: &e%player%' # Always have the %player%
 check-create-value: '&aValue: &2%amount%' # Always have the %amount%
 
-
 invalid-usage-pay: '&cUsage: /pay <player> <amount> or /money pay <player> <amount>'
 invalid-usage-add: '&cUsage: /money add <player> <amount>'
 invalid-usage-set: '&cUsage: /money set <player> <amount>'
 invalid-usage-remove: '&cUsage: /money remove <player> <amount>'
 invalid-usage-admin: '&cUsage: /money admin <on/off>'
+invalid-usage-withdraw: '&cUsage: /money withdraw <amount>'
+inventory-full: '&cYour inventory is full!'
 not-enough-money: '&cYou do not have enough money.'
 no-player: '&cPlayer not found.'
 invalid-number: '&cInvalid number.'

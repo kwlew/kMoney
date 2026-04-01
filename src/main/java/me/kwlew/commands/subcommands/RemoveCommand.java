@@ -68,7 +68,7 @@ public class RemoveCommand implements SubCommand {
         String formatted = me.kwlew.utils.MoneyFormatter.format(amount, symbol);
 
         sender.sendMessage(
-                messages.get("removed",
+                messages.getWithPrefix("removed",
                         "%amount%", formatted,
                         "%player%", target.getName()
                 )
