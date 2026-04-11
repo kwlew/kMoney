@@ -50,22 +50,39 @@ public class WithdrawCommand implements SubCommand {
         }
 
         double amount;
+        int notes;
 
         try {
             amount = MoneyParser.parse(args[0]);
         } catch (Exception e) {
-            player.sendMessage(messages.getWithPrefix("invalid-amount"));
+            player.sendMessage(messages.getWithPrefix("invalid-number"));
             return;
+        }
+        if (args.length == 2) {
+            try {
+                notes = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                player.sendMessage(messages.getWithPrefix("invalid-number"));
+                return;
+            }
+
+            if (notes > 64) {
+                player.sendMessage(messages.getWithPrefix("invalid-number"));
+                return;
+            }
+        }
+        else {
+            notes = 1;
         }
 
         if (amount <= 0) {
-            player.sendMessage(messages.getWithPrefix("invalid-amount"));
+            player.sendMessage(messages.getWithPrefix("invalid-number"));
             return;
         }
 
         double balance = economy.getBalance(player.getUniqueId());
 
-        if (balance < amount) {
+        if (balance < amount*notes) {
             player.sendMessage(messages.getWithPrefix("not-enough-money"));
             return;
         }
@@ -75,19 +92,19 @@ public class WithdrawCommand implements SubCommand {
             return;
         }
 
-        ItemStack paper = new ItemStack(Material.PAPER);
+        ItemStack paper = new ItemStack(Material.PAPER, notes);
         ItemMeta meta = paper.getItemMeta();
 
         String symbol = config.getCurrencySymbol();
-        String formatted = me.kwlew.utils.MoneyFormatter.format(amount, symbol);
+        String formatted = me.kwlew.utils.MoneyFormatter.format(amount*notes, symbol);
 
-// NAME
+        // NAME
         meta.displayName(
                 messages.get("check-create-name")
                         .decoration(TextDecoration.ITALIC, false)
         );
 
-// LORE
+        // LORE
         meta.lore(java.util.List.of(
                 messages.get("check-create-value", "%amount%", formatted)
                         .decoration(TextDecoration.ITALIC, false),
@@ -101,13 +118,16 @@ public class WithdrawCommand implements SubCommand {
 
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
         player.getInventory().addItem(paper);
-        economy.removeBalance(player.getUniqueId(), amount);
+        economy.removeBalance(player.getUniqueId(), amount*notes);
 
         player.sendMessage(messages.getWithPrefix("check-withdraw", "%amount%", formatted));
     }
 
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
-        return List.of("1K", "1M");
+        if (args.length == 1) {
+            return List.of("1K", "1M", "1B");
+        }
+        return List.of("1", "2", "4", "8", "16");
     }
 }

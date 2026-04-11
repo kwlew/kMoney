@@ -72,14 +72,15 @@ public class PayCommand implements SubCommand {
         String symbol = config.getCurrencySymbol();
         String formatted = me.kwlew.utils.MoneyFormatter.format(amount, symbol);
 
+
         sender.sendMessage(messages.getWithPrefix("pay-sent",
-                "%amount", formatted,
-                "%player", target.getName()
+                "%amount%", formatted,
+                "%player%", target.getName()
         ));
 
-        sender.sendMessage(messages.getWithPrefix("pay-received",
-                "%amount", formatted,
-                "%player", target.getName()
+        target.sendMessage(messages.getWithPrefix("pay-received",
+                "%amount%", formatted,
+                "%player%", player.getName()
         ));
     }
 

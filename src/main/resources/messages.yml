@@ -5,6 +5,7 @@ prefix: '&8[&4kMoney&8] '
 reloading: '&bReloading kMoney...'
 reloaded: '&bReload complete!'
 balance: '&eYour balance: &a%balance%'
+other-balance: '&a%player%&e has&a %balance%'
 added: '&aAdded &e%amount% &ato %player%'
 removed: '&aRemoved &e%amount%&a from %player%'
 set: '&eSet %player%''s balance to &a%amount%'
@@ -18,6 +19,7 @@ check-withdraw: '&aYou withdrew &e%amount%&a.'
 check-create-name: '&a&lCheck'
 check-create-creator: '&aCreated by: &e%player%' # Always have the %player%
 check-create-value: '&aValue: &2%amount%' # Always have the %amount%
+already-redeemed: "&cThis money note has already been redeemed!"
 
 invalid-usage-pay: '&cUsage: /pay <player> <amount> or /money pay <player> <amount>'
 invalid-usage-add: '&cUsage: /money add <player> <amount>'

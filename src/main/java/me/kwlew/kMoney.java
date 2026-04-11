@@ -8,6 +8,7 @@ import me.kwlew.config.ConfigManager;
 import me.kwlew.config.MessageManager;
 import me.kwlew.economy.MoneyManager;
 import me.kwlew.economy.storage.YamlStorage;
+import me.kwlew.listeners.CraftListener;
 import me.kwlew.listeners.JoinListener;
 import me.kwlew.listeners.MoneyRedeemListener;
 import me.kwlew.listeners.QuitListener;
@@ -52,7 +53,7 @@ public class kMoney extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new JoinListener(this), this);
         getServer().getPluginManager().registerEvents(new QuitListener(this), this);
         getServer().getPluginManager().registerEvents(new MoneyRedeemListener(economy, this, messageManager), this);
-
+        getServer().getPluginManager().registerEvents(new CraftListener(this), this);
 
         Objects.requireNonNull(getCommand("pay")).setExecutor(new PayStandaloneCommand(payCommand));
         Objects.requireNonNull(getCommand("money")).setTabCompleter(moneyCommand);

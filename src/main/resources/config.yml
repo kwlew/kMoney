@@ -3,3 +3,6 @@
 player-default-money: 100.0
 
 currency-symbol: "$"
+# This is for preventing dupes, change this and keep it a secret.
+security:
+  secret: "secret"
