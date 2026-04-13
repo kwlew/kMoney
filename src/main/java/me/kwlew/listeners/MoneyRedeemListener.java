@@ -1,6 +1,7 @@
 package me.kwlew.listeners;
 
 import me.kwlew.api.EconomyService;
+import me.kwlew.config.ConfigManager;
 import me.kwlew.config.MessageManager;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -18,11 +19,13 @@ public class MoneyRedeemListener implements Listener {
     private final EconomyService economy;
     private final NamespacedKey key;
     private final MessageManager messages;
+    private final ConfigManager config;
 
-    public MoneyRedeemListener(EconomyService economy, Plugin plugin, MessageManager messages) {
+    public MoneyRedeemListener(EconomyService economy, Plugin plugin, MessageManager messages, ConfigManager config) {
         this.economy = economy;
         this.key = new NamespacedKey(plugin, "money_value");
         this.messages = messages;
+        this.config = config;
     }
 
     @EventHandler
@@ -56,7 +59,7 @@ public class MoneyRedeemListener implements Listener {
 
             item.setAmount(0);
 
-            String formatted = me.kwlew.utils.MoneyFormatter.format(total, "$");
+            String formatted = me.kwlew.utils.MoneyFormatter.format(total, config.getCurrencySymbol());
 
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
             player.sendMessage(messages.getWithPrefix("check-redeem",
@@ -68,7 +71,7 @@ public class MoneyRedeemListener implements Listener {
 
         item.setAmount(item.getAmount()-1);
 
-        String formatted = me.kwlew.utils.MoneyFormatter.format(value, "$");
+        String formatted = me.kwlew.utils.MoneyFormatter.format(value, config.getCurrencySymbol());
 
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
         player.sendMessage(messages.getWithPrefix("check-redeem",

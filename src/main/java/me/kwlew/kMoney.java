@@ -52,7 +52,7 @@ public class kMoney extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new JoinListener(this), this);
         getServer().getPluginManager().registerEvents(new QuitListener(this), this);
-        getServer().getPluginManager().registerEvents(new MoneyRedeemListener(economy, this, messageManager), this);
+        getServer().getPluginManager().registerEvents(new MoneyRedeemListener(economy, this, messageManager, configManager), this);
         getServer().getPluginManager().registerEvents(new CraftListener(this), this);
 
         Objects.requireNonNull(getCommand("pay")).setExecutor(new PayStandaloneCommand(payCommand));

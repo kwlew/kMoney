@@ -37,7 +37,7 @@ public class JoinListener implements Listener {
 
         economy.getBalance(uuid);
 
-        if (player.hasPermission("money.admin.update")
+        if (player.hasPermission("kmoney.admin")
                 && !plugin.getAdminMessageDisabled().contains(uuid)) {
 
             Component message = serializer.deserialize(

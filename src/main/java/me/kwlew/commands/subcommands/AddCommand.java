@@ -36,6 +36,11 @@ public class AddCommand implements SubCommand {
             return;
         }
 
+        if (!sender.hasPermission("kmoney.admin")) {
+            sender.sendMessage(messages.getWithPrefix("no-permission"));
+            return;
+        }
+
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
             sender.sendMessage(messages.getWithPrefix("no-player"));

@@ -44,7 +44,7 @@ public class MoneyCommand implements CommandExecutor, TabCompleter {
                                       @NonNull String alias,
                                       String[] args) {
 
-        if (args.length == 1 && sender.hasPermission("money.admin")) {
+        if (args.length == 1 && sender.hasPermission("kmoney.admin")) {
             return new ArrayList<>(subCommands.keySet());
         }
 

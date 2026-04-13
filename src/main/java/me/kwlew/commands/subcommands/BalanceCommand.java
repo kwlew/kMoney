@@ -59,15 +59,10 @@ public class BalanceCommand implements SubCommand {
             return;
         }
 
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(messages.getWithPrefix("no-player"));
-            return;
-        }
-
         double balance = economy.getBalance(target.getUniqueId());
         String symbol = config.getCurrencySymbol();
 
-        if (args[0].equalsIgnoreCase(player.getName())) {
+        if (sender instanceof Player player && args[0].equalsIgnoreCase(player.getName())) {
             sender.sendMessage(
                     messages.getWithPrefix("balance",
                             "%balance%", me.kwlew.utils.MoneyFormatter.format(balance, symbol)

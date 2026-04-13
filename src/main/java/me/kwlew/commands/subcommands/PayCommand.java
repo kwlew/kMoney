@@ -4,6 +4,7 @@ import me.kwlew.api.EconomyService;
 import me.kwlew.commands.SubCommand;
 import me.kwlew.config.ConfigManager;
 import me.kwlew.config.MessageManager;
+import me.kwlew.utils.MoneyParser;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -48,10 +49,10 @@ public class PayCommand implements SubCommand {
 
         double amount;
         try {
-            amount = Double.parseDouble(args[1]);
+            amount = MoneyParser.parse(args[1]);
         } catch (NumberFormatException e) {
             sender.sendMessage(messages.getWithPrefix("invalid-number"));
-            throw new RuntimeException(e);
+            return;
         }
 
         if (amount <= 0) {

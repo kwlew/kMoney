@@ -31,18 +31,7 @@ public class MoneyManager implements EconomyService {
 
     @Override
     public double getBalance(UUID uuid) {
-        if (cache.containsKey(uuid)) {
-            return cache.get(uuid);
-        }
-
-        cache.put(uuid, 0.0);
-
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            double balance = storage.getBalance(uuid);
-            cache.put(uuid, balance);
-        });
-
-        return 0.0;
+        return cache.computeIfAbsent(uuid, storage::getBalance);
     }
 
     @Override
@@ -63,15 +52,16 @@ public class MoneyManager implements EconomyService {
 
     @Override
     public boolean hasAccount(UUID uuid) {
-        return storage.hasAccount(uuid);
+        return cache.containsKey(uuid) || storage.hasAccount(uuid);
     }
 
     @Override
     public void createAccount(UUID uuid) {
         if (!hasAccount(uuid)) {
             double defaultMoney = config.getDefaultBalance();
+            storage.setBalance(uuid, defaultMoney);
             cache.put(uuid, defaultMoney);
-            setBalance(uuid, defaultMoney);
+            dirty.remove(uuid);
         }
     }
 

@@ -39,6 +39,11 @@ public class MoneyAdminCommand implements SubCommand {
 
         UUID uuid = player.getUniqueId();
 
+        if (args.length < 1) {
+            player.sendMessage(messages.getWithPrefix("invalid-usage-admin"));
+            return;
+        }
+
         if (args[0].equalsIgnoreCase("off")) {
             plugin.getAdminMessageDisabled().add(uuid);
             player.sendMessage(messages.getWithPrefix("admin-off"));
