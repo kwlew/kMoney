@@ -51,7 +51,7 @@ public class CraftListener implements Listener {
                     .get(key, PersistentDataType.DOUBLE);
 
             if (value != null) {
-                event.getInventory().setResult(null); // 🔥 hides result
+                event.getInventory().setResult(null);
                 return;
             }
         }

@@ -41,9 +41,9 @@ public class JoinListener implements Listener {
                 && !plugin.getAdminMessageDisabled().contains(uuid)) {
 
             Component message = serializer.deserialize(
-                    "&aYou are using &bv0.1.0 &aof kMoney!\n&aCheck for updates: "
+                    "&aYou are using &bv0.3.0b &aof kMoney!\n&aCheck for updates on my"
             ).append(
-                    Component.text("Here")
+                    Component.text("GitHub")
                             .color(NamedTextColor.AQUA)
                             .clickEvent(ClickEvent.openUrl("https://github.com/kwlew/kMoney"))
             );
