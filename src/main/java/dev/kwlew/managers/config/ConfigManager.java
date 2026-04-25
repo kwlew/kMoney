@@ -31,7 +31,7 @@ public class ConfigManager {
     }
 
     public String getCurrencySymbol() {
-        return config.get().getString("symbol");
+        return config.get().getString("symbol", "$");
     }
 
     public double getDefaultBalance() {

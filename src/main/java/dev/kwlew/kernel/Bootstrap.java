@@ -4,6 +4,7 @@ import dev.kwlew.economy.EconomyManager;
 import dev.kwlew.economy.api.EconomyService;
 import dev.kwlew.economy.storage.EcoPersistence;
 import dev.kwlew.economy.storage.EconomyStorage;
+import dev.kwlew.commands.MoneyCommand;
 import dev.kwlew.hooks.papi.PlaceholderAPIHook;
 import dev.kwlew.listeners.JoinListener;
 import dev.kwlew.managers.MessageManager;
@@ -24,6 +25,8 @@ public class Bootstrap {
         initManagers();
 
         initEconomy();
+
+        initCommands();
 
         initHooks();
 
@@ -63,6 +66,10 @@ public class Bootstrap {
         registry.bind(EconomyStorage.class, EcoPersistence.class);
 
         registry.bind(EconomyService.class, EconomyManager.class);
+    }
+
+    private void initCommands() {
+        registry.resolve(MoneyCommand.class);
     }
 
     private void initHooks() {
