@@ -1,0 +1,16 @@
+name: kMoney
+description: $description
+version: '${version}'
+
+main: dev.kwlew.kMoney
+api-version: '26.1.2'
+
+author: kwlew
+website: https://kwlew.dev
+
+soft-depend: ["PlaceholderAPI", "Vault"]
+
+permissions:
+  kmoney.admin:
+    description: Permission to use all admin commands.
+    default: op
