@@ -1,11 +1,48 @@
 prefix: "<dark_gray>[<aqua>kMoney<dark_gray>] "
 
+player:
+  not-found: "<red>Player not found."
+  inventory-full: "<red>Your inventory is full."
+
 money:
   player-only: "<red>This command can only be used by a player."
   balance-self: "<gray>Your balance is <green><balance>"
   balance-other: "<gray><player>'s balance is <green><balance>"
+  reloaded: "<gray>Configuration reloaded."
   invalid-amount: "<red>Invalid amount: <amount>"
   insufficient-funds: "<red>You do not have enough money. Balance: <balance>, needed: <amount>"
   same-player: "<red>You cannot pay yourself."
+  max-notes: "<red>You cannot withdraw more than 64 notes."
+  set: "<gray>Set <yellow><player><gray>'s balance to <green><amount><gray>."
+  got-set: "<gray>Your balance was set to <green><amount><gray> by <yellow><player><gray>."
+  removed: "<gray>Removed <green><amount><gray> from <yellow><player><gray>."
+  got-removed: "<gray><yellow><player><gray> removed <green><amount><gray> from your balance."
   pay-sent: "<gray>You sent <green><amount> <gray>to <yellow><player><gray>."
   pay-received: "<gray>You received <green><amount> <gray>from <yellow><player><gray>."
+
+check:
+  create-name: "<green>Money Check"
+  create-creator: "<gray>Created by: <yellow><player>"
+  create-value: "<gray>Value: <green><amount>"
+  success: "<gray>You created a money check for <green><amount><gray>."
+  sucess: "<gray>You created a money check for <green><amount><gray>."
+  redeem: "<gray>You redeemed <green><amount><gray>."
+
+"check.create-name": "<green>Money Check"
+"check-create-name": "<green>Money Check"
+"check.create-creator": "<gray>Created by: <yellow><player>"
+"check-create-creator": "<gray>Created by: <yellow><player>"
+"check.create-value": "<gray>Value: <green><amount>"
+"check-create-value": "<gray>Value: <green><amount>"
+"check.redeem": "<gray>You redeemed <green><amount><gray>."
+"check-redeem": "<gray>You redeemed <green><amount><gray>."
+"check.success": "<gray>You created a money check for <green><amount><gray>."
+"check.sucess": "<gray>You created a money check for <green><amount><gray>."
+
+usage:
+  pay: "<red>Usage: /pay <player> <amount> or /money pay <player> <amount>"
+  add: "<red>Usage: /money add <player> <amount>"
+  set: "<red>Usage: /money set <player> <amount>"
+  remove: "<red>Usage: /money remove <player> <amount>"
+  withdraw: "<red>Usage: /money withdraw <amount> [notes]"
+  admin: "<red>Usage: /money admin <on/off>"

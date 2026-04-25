@@ -6,7 +6,9 @@ import dev.kwlew.economy.storage.EcoPersistence;
 import dev.kwlew.economy.storage.EconomyStorage;
 import dev.kwlew.commands.MoneyCommand;
 import dev.kwlew.hooks.papi.PlaceholderAPIHook;
+import dev.kwlew.listeners.CheckClaimListener;
 import dev.kwlew.listeners.JoinListener;
+import dev.kwlew.listeners.QuitListener;
 import dev.kwlew.managers.MessageManager;
 import dev.kwlew.managers.config.ConfigManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -60,6 +62,8 @@ public class Bootstrap {
 
     private void initListeners() {
         registry.resolve(JoinListener.class);
+        registry.resolve(QuitListener.class);
+        registry.resolve(CheckClaimListener.class);
     }
 
     private void initEconomy() {
