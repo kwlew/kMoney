@@ -7,6 +7,7 @@ import dev.kwlew.economy.storage.EconomyStorage;
 import dev.kwlew.commands.MoneyCommand;
 import dev.kwlew.hooks.papi.PlaceholderAPIHook;
 import dev.kwlew.listeners.CheckClaimListener;
+import dev.kwlew.listeners.CraftListener;
 import dev.kwlew.listeners.JoinListener;
 import dev.kwlew.listeners.QuitListener;
 import dev.kwlew.managers.MessageManager;
@@ -54,6 +55,7 @@ public class Bootstrap {
         registry.resolve(JoinListener.class);
         registry.resolve(QuitListener.class);
         registry.resolve(CheckClaimListener.class);
+        registry.resolve(CraftListener.class);
     }
 
     private void initEconomy() {
