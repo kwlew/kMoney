@@ -1,0 +1,8 @@
+# This is the config for the plugin, here you can change most of how it looks and works.
+# Player default starting money.
+player-default-money: 100.0
+
+currency-symbol: "$"
+# This is for preventing dupes, change this and keep it a secret.
+security:
+  secret: "secret"

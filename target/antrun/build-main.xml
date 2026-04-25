@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="maven-antrun-" default="main">
+  <target name="main">
+    <copy file="C:\Users\kaleo\Desktop\projects\target/kMoney.jar" tofile="C:\Users\Kaleo\Desktop\plugin development server\plugins/kMoney.jar" overwrite="true" />
+  </target>
+</project>
