@@ -45,11 +45,6 @@ public class Bootstrap {
         lifecycle(LifecycleComponent::shutdown);
     }
 
-    public void reload() {
-        shutdown();
-        init();
-    }
-
     private void initManagers() {
         registry.resolve(MessageManager.class);
         registry.resolve(ConfigManager.class);
