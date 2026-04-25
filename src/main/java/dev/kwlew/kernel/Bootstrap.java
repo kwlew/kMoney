@@ -45,14 +45,9 @@ public class Bootstrap {
         lifecycle(LifecycleComponent::shutdown);
     }
 
-
     public void reload() {
         shutdown();
         init();
-    }
-
-    public Registry getRegistry() {
-        return registry;
     }
 
     private void initManagers() {
