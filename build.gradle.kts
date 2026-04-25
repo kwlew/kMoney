@@ -25,7 +25,7 @@ java {
 tasks {
     runServer {
         minecraftVersion(libs.versions.minecraft.get())
-        jvmArgs("-Xms2G", "-Xmx2G", "-Dcom.mojang.eula.agree=true")
+        jvmArgs("-Xms4G", "-Xmx4G", "-Dcom.mojang.eula.agree=true")
     }
 
     register<Copy>("copyPluginJar") {

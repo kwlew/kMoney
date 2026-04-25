@@ -1,0 +1,11 @@
+prefix: "<dark_gray>[<aqua>kMoney<dark_gray>] "
+
+money:
+  player-only: "<red>This command can only be used by a player."
+  balance-self: "<gray>Your balance is <green><balance>"
+  balance-other: "<gray><player>'s balance is <green><balance>"
+  invalid-amount: "<red>Invalid amount: <amount>"
+  insufficient-funds: "<red>You do not have enough money. Balance: <balance>, needed: <amount>"
+  same-player: "<red>You cannot pay yourself."
+  pay-sent: "<gray>You sent <green><amount> <gray>to <yellow><player><gray>."
+  pay-received: "<gray>You received <green><amount> <gray>from <yellow><player><gray>."
