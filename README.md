@@ -1,60 +1,74 @@
 # kMoney
 
-kMoney repository.
+`kMoney` is a Paper plugin that provides a full `/money` economy command with:
 
-## Overview
-kMoney is a Java project. This repository currently contains the source code and related assets for the **kMoney** application/library.
+- BigDecimal-based balances (precision-safe money math)
+- Player-to-player payments
+- Admin add/remove/set tools
+- Withdrawable paper checks that players can redeem
+- PlaceholderAPI support
+
+## Features
+
+- **Accurate economy math:** uses `BigDecimal` instead of floating-point.
+- **Readable number formatting:** supports compact suffixes up to `UDC` (`1e36`), e.g. `1.02K`, `1M`, `3.5NO`.
+- **Granular permissions:** each subcommand has its own permission node.
+- **Command visibility by permission:** restricted subcommands are hidden from users without access.
+- **Check items:** create money checks with `/money withdraw`, redeem by right-clicking.
 
 ## Requirements
-- **Java** (JDK 8+ recommended)
-- A build tool, depending on the project setup:
-  - **Maven** (`mvn`) if you have a `pom.xml`
-  - **Gradle** (`gradle`) if you have a `build.gradle` / `build.gradle.kts`
 
-## Getting started
+- Paper API: `26.1.2`
+- Java toolchain: `25`
+- Optional plugins:
+  - PlaceholderAPI
+  - Vault
 
-### 1) Clone the repository
-```bash
-git clone https://github.com/kwlew/kMoney.git
-cd kMoney
-```
+## Installation
 
-### 2) Build
+1. Donwload the plugin and place it in your /plugins folder
 
-#### If the project uses Maven
-```bash
-mvn clean package
-```
+## Commands
 
-#### If the project uses Gradle
-```bash
-gradle build
-```
+| Command | Description | Permission |
+| --- | --- | --- |
+| `/money` | Show your balance | `kmoney.command.money` |
+| `/money balance [player]` | Show balance (self/other) | `kmoney.command.money` |
+| `/money pay <player> <amount>` | Send money to a player | `kmoney.command.money.pay` |
+| `/money withdraw <amount> [notes]` | Create check item(s) | `kmoney.command.money.withdraw` |
+| `/money add <player> <amount>` | Add money to a player | `kmoney.command.money.add` |
+| `/money remove <player> <amount>` | Remove money from a player | `kmoney.command.money.remove` |
+| `/money set <player> <amount>` | Set a player balance | `kmoney.command.money.set` |
+| `/money reload` | Reload config/messages | `kmoney.command.money.reload` |
 
-### 3) Run
-How you run the project depends on how it’s structured.
+`kmoney.admin` grants all of the above.
 
-- If this is a CLI app, check for a `Main` class and run it from your IDE, or use your build tool.
-- If this is a library, the build output will be a JAR under `target/` (Maven) or `build/libs/` (Gradle).
+## Amount Input
 
-## Project structure
-This may vary, but common layouts include:
+You can use plain numbers or suffixes (case-insensitive):
 
-- `src/main/java` — application/library source
-- `src/test/java` — tests
-- `src/main/resources` — resources
+- `k`, `m`, `b`, `t`, `q`, `qq`, `s`, `ss`, `oc`, `no`, `dc`, `udc`
 
-## Contributing
-Contributions are welcome.
+Examples:
 
-1. Fork the repo
-2. Create a feature branch: `git checkout -b feature/my-change`
-3. Commit your changes: `git commit -m "Describe your change"`
-4. Push to your branch: `git push origin feature/my-change`
-5. Open a Pull Request
+- `1000`
+- `1.25k`
+- `5m`
+- `2udc`
 
-## License
-No license has been specified yet. If you want this to be open source, add a `LICENSE` file (for example: MIT, Apache-2.0, or GPL-3.0).
+## Placeholders (PlaceholderAPI)
 
-## Contact
-If you have questions or suggestions, feel free to open an issue in this repository.
+- `%kMoney_balance%` - raw balance
+- `%kMoney_balance_formatted%` - formatted balance with symbol/suffix
+
+## Configuration
+
+`src/main/resources/config.yml`
+
+- `symbol` - currency symbol (default: `$`)
+- `default-balance` - starting balance for new accounts
+
+`src/main/resources/messages.yml`
+
+- All user-facing messages, including check text and command feedback.
+
