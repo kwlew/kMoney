@@ -1,12 +1,13 @@
 package dev.kwlew.economy.storage;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface EconomyStorage {
 
-    double getBalance(UUID uuid);
+    BigDecimal getBalance(UUID uuid);
 
-    void setBalance(UUID uuid, double balance);
+    void setBalance(UUID uuid, BigDecimal balance);
 
     boolean hasAccount(UUID uuid);
 

@@ -6,6 +6,7 @@ player:
 
 money:
   player-only: "<red>This command can only be used by a player."
+  no-permission: "<red>You do not have permission."
   balance-self: "<gray>Your balance is <green><balance>"
   balance-other: "<gray><player>'s balance is <green><balance>"
   reloaded: "<gray>Configuration reloaded."
@@ -17,6 +18,8 @@ money:
   got-set: "<gray>Your balance was set to <green><amount><gray> by <yellow><player><gray>."
   removed: "<gray>Removed <green><amount><gray> from <yellow><player><gray>."
   got-removed: "<gray><yellow><player><gray> removed <green><amount><gray> from your balance."
+  added: "<gray>Added <green><amount><gray> to <yellow><player><gray>."
+  got-added: "<gray><yellow><player><gray> added <green><amount><gray> to your balance."
   pay-sent: "<gray>You sent <green><amount> <gray>to <yellow><player><gray>."
   pay-received: "<gray>You received <green><amount> <gray>from <yellow><player><gray>."
 
@@ -25,19 +28,7 @@ check:
   create-creator: "<gray>Created by: <yellow><player>"
   create-value: "<gray>Value: <green><amount>"
   success: "<gray>You created a money check for <green><amount><gray>."
-  sucess: "<gray>You created a money check for <green><amount><gray>."
   redeem: "<gray>You redeemed <green><amount><gray>."
-
-"check.create-name": "<green>Money Check"
-"check-create-name": "<green>Money Check"
-"check.create-creator": "<gray>Created by: <yellow><player>"
-"check-create-creator": "<gray>Created by: <yellow><player>"
-"check.create-value": "<gray>Value: <green><amount>"
-"check-create-value": "<gray>Value: <green><amount>"
-"check.redeem": "<gray>You redeemed <green><amount><gray>."
-"check-redeem": "<gray>You redeemed <green><amount><gray>."
-"check.success": "<gray>You created a money check for <green><amount><gray>."
-"check.sucess": "<gray>You created a money check for <green><amount><gray>."
 
 usage:
   pay: "<red>Usage: /pay <player> <amount> or /money pay <player> <amount>"
@@ -45,4 +36,3 @@ usage:
   set: "<red>Usage: /money set <player> <amount>"
   remove: "<red>Usage: /money remove <player> <amount>"
   withdraw: "<red>Usage: /money withdraw <amount> [notes]"
-  admin: "<red>Usage: /money admin <on/off>"

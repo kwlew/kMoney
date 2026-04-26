@@ -3,6 +3,8 @@ package dev.kwlew.managers.config;
 import dev.kwlew.kMoney;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.math.BigDecimal;
+
 public class ConfigManager {
     private final ConfigFile config;
     private final ConfigFile messages;
@@ -34,7 +36,20 @@ public class ConfigManager {
         return config.get().getString("symbol", "$");
     }
 
-    public double getDefaultBalance() {
-        return 100.0;
+    public BigDecimal getDefaultBalance() {
+        Object raw = config.get().get("default-balance");
+        if (raw instanceof Number number) {
+            return BigDecimal.valueOf(number.doubleValue());
+        }
+
+        if (raw instanceof String value) {
+            try {
+                return new BigDecimal(value);
+            } catch (NumberFormatException ignored) {
+                return new BigDecimal("100.0");
+            }
+        }
+
+        return new BigDecimal("100.0");
     }
 }

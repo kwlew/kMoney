@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,10 +44,29 @@ public class EcoPersistence implements EconomyStorage {
     }
 
     @Override
-    public double getBalance(UUID uuid) {
+    public BigDecimal getBalance(UUID uuid) {
         synchronized (getLock(uuid)) {
             FileConfiguration config = getCachedConfig(uuid);
-            return config.getDouble("balance", 0.0);
+            Object raw = config.get("balance");
+            switch (raw) {
+                case null -> {
+                    return BigDecimal.ZERO;
+                }
+                case Number number -> {
+                    return BigDecimal.valueOf(number.doubleValue());
+                }
+                case String value -> {
+                    try {
+                        return new BigDecimal(value);
+                    } catch (NumberFormatException ignored) {
+                        return BigDecimal.ZERO;
+                    }
+                }
+                default -> {
+                }
+            }
+
+            return BigDecimal.ZERO;
         }
     }
 
@@ -75,12 +95,12 @@ public class EcoPersistence implements EconomyStorage {
     }
 
     @Override
-    public void setBalance(UUID uuid, double amount) {
+    public void setBalance(UUID uuid, BigDecimal amount) {
         synchronized (getLock(uuid)) {
             File file = getFile(uuid);
             FileConfiguration config = getCachedConfig(uuid);
 
-            config.set("balance", amount);
+            config.set("balance", amount.toPlainString());
 
             try {
                 config.save(file);
@@ -99,7 +119,7 @@ public class EcoPersistence implements EconomyStorage {
     public void createAccount(UUID uuid) {
         synchronized (getLock(uuid)) {
             if (!hasAccount(uuid)) {
-                setBalance(uuid, 0.0);
+                setBalance(uuid, BigDecimal.ZERO);
             }
         }
     }

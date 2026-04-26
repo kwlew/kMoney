@@ -30,15 +30,7 @@ public class CraftListener implements ListenerComponent {
     @EventHandler
     public void onCraft(CraftItemEvent event) {
         for (ItemStack item : event.getInventory().getMatrix()) {
-            if (item == null || item.getType() != Material.PAPER) continue;
-
-            ItemMeta meta = item.getItemMeta();
-            if (meta == null) continue;
-
-            Double value = meta.getPersistentDataContainer()
-                    .get(key, PersistentDataType.DOUBLE);
-
-            if (value != null) {
+            if (isMoneyCheck(item)) {
                 event.setCancelled(true);
                 return;
             }
@@ -48,21 +40,30 @@ public class CraftListener implements ListenerComponent {
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
         for (ItemStack item : event.getInventory().getMatrix()) {
-            if (item == null) continue;
-
-            if (item.getType() != Material.PAPER) continue;
-
-            ItemMeta meta = item.getItemMeta();
-            if (meta == null) continue;
-
-            Double value = meta.getPersistentDataContainer()
-                    .get(key, PersistentDataType.DOUBLE);
-
-            if (value != null) {
+            if (isMoneyCheck(item)) {
                 event.getInventory().setResult(null);
                 return;
             }
         }
+    }
+
+    private boolean isMoneyCheck(ItemStack item) {
+        if (item == null || item.getType() != Material.PAPER) {
+            return false;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return false;
+        }
+
+        String encoded = meta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
+        if (encoded != null) {
+            return true;
+        }
+
+        Double legacy = meta.getPersistentDataContainer().get(key, PersistentDataType.DOUBLE);
+        return legacy != null;
     }
 }
 

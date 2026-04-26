@@ -7,6 +7,7 @@ import dev.kwlew.managers.config.ConfigManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +19,7 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
     private final EconomyStorage storage;
     private final ConfigManager config;
 
-    private final Map<UUID, Double> cache = new ConcurrentHashMap<>();
+    private final Map<UUID, BigDecimal> cache = new ConcurrentHashMap<>();
     private final Set<UUID> dirty = ConcurrentHashMap.newKeySet();
 
     private final JavaPlugin plugin;
@@ -33,24 +34,24 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
     }
 
     @Override
-    public double getBalance(UUID uuid) {
+    public BigDecimal getBalance(UUID uuid) {
         return cache.computeIfAbsent(uuid, storage::getBalance);
     }
 
     @Override
-    public void setBalance(UUID uuid, double amount) {
-        cache.put(uuid, amount);
+    public void setBalance(UUID uuid, BigDecimal amount) {
+        cache.put(uuid, amount.max(BigDecimal.ZERO));
         dirty.add(uuid);
     }
 
     @Override
-    public void addBalance(UUID uuid, double amount) {
-        setBalance(uuid, getBalance(uuid) + amount);
+    public void addBalance(UUID uuid, BigDecimal amount) {
+        setBalance(uuid, getBalance(uuid).add(amount));
     }
 
     @Override
-    public void removeBalance(UUID uuid, double amount) {
-        setBalance(uuid, Math.max(0, getBalance(uuid) - amount));
+    public void removeBalance(UUID uuid, BigDecimal amount) {
+        setBalance(uuid, getBalance(uuid).subtract(amount).max(BigDecimal.ZERO));
     }
 
     @Override
@@ -71,7 +72,7 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
     @Override
     public void createAccount(UUID uuid) {
         if (!hasAccount(uuid)) {
-            double defaultMoney = config.getDefaultBalance();
+            BigDecimal defaultMoney = config.getDefaultBalance();
             storage.setBalance(uuid, defaultMoney);
             storage.setAdminMessage(uuid, true);
             cache.put(uuid, defaultMoney);
@@ -81,7 +82,7 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
 
     private synchronized void saveDirty() {
         for (UUID uuid : new HashSet<>(dirty)) {
-            Double balance = cache.get(uuid);
+            BigDecimal balance = cache.get(uuid);
             if (balance == null) continue;
 
             storage.setBalance(uuid, balance);
@@ -108,7 +109,7 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
     }
 
     public synchronized void saveAll() {
-        for (Map.Entry<UUID, Double> entry : cache.entrySet()) {
+        for (Map.Entry<UUID, BigDecimal> entry : cache.entrySet()) {
             storage.setBalance(entry.getKey(), entry.getValue());
         }
 

@@ -78,6 +78,20 @@ public class MessageManager {
         );
     }
 
+    public Component getRaw(String path) {
+        String msg = config.getString(path);
+        if (msg == null) msg = "<red>Missing message: " + path;
+
+        return miniMessage.deserialize(msg);
+    }
+
+    public Component getRaw(String path, TagResolver... resolvers) {
+        String msg = config.getString(path);
+        if (msg == null) msg = "<red>Missing message: " + path;
+
+        return miniMessage.deserialize(msg, TagResolver.resolver(resolvers));
+    }
+
     // ======================
     // SEND METHODS
     // ======================

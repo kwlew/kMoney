@@ -8,6 +8,8 @@ import dev.kwlew.managers.config.ConfigManager;
 import dev.kwlew.economy.utils.Formatter;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.math.BigDecimal;
+
 public abstract class BaseCommand implements LifecycleComponent {
 
     protected final JavaPlugin plugin;
@@ -23,7 +25,7 @@ public abstract class BaseCommand implements LifecycleComponent {
         this.config = config;
     }
 
-    protected String formatMoney(double amount) {
+    protected String formatMoney(BigDecimal amount) {
         return Formatter.format(amount, config.getCurrencySymbol());
     }
 }
