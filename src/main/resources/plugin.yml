@@ -5,12 +5,46 @@ version: '${version}'
 main: dev.kwlew.kMoney
 api-version: '26.1.2'
 
-author: kwlew
+author: KWLEW
 website: https://kwlew.dev
 
-soft-depend: ["PlaceholderAPI", "Vault"]
+soft-depend:
+  - PlaceholderAPI
+  - Vault
+
+commands:
+  money:
+    description: View balances, transfer money, and manage checks.
+    usage: /money [balance|pay|add|remove|set|withdraw|reload]
+    permission: kmoney.command.money
 
 permissions:
-  kmoney.admin:
-    description: Permission to use all admin commands.
+  kmoney.command.money:
+    description: Allows access to the /money command and balance checks.
+    default: true
+  kmoney.command.money.reload:
+    description: Allows reloading plugin configuration.
     default: op
+  kmoney.command.money.add:
+    description: Allows adding money to a player.
+    default: op
+  kmoney.command.money.remove:
+    description: Allows removing money from a player.
+    default: op
+  kmoney.command.money.set:
+    description: Allows setting a player's balance.
+    default: op
+  kmoney.command.money.withdraw:
+    description: Allows creating money checks.
+    default: true
+  kmoney.command.money.pay:
+    description: Allows using /money pay.
+    default: true
+  kmoney.admin:
+    description: Full access to admin money commands.
+    default: op
+    children:
+      kmoney.command.money.reload: true
+      kmoney.command.money.add: true
+      kmoney.command.money.remove: true
+      kmoney.command.money.set: true

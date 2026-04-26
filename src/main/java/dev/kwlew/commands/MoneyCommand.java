@@ -12,6 +12,7 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -66,6 +67,10 @@ public final class MoneyCommand extends BaseCommand {
                                 })))
                 .then(Commands.literal("reload")
                         .executes(ctx -> {
+                            if (!requireAdmin(ctx.getSource())) {
+                                return 0;
+                            }
+
                             config.reloadAll();
                             messages.reload();
                             messages.send(ctx.getSource().getSender(), "money.reloaded");
@@ -100,6 +105,10 @@ public final class MoneyCommand extends BaseCommand {
                                             return builder.buildFuture();
                                         })
                                         .executes(ctx -> {
+                                            if (!requireAdmin(ctx.getSource())) {
+                                                return 0;
+                                            }
+
                                             String name = StringArgumentType.getString(ctx, "target");
                                             Player target = Bukkit.getPlayerExact(name);
 
@@ -126,6 +135,10 @@ public final class MoneyCommand extends BaseCommand {
                                                     return builder.buildFuture();
                                                 })
                                                 .executes(ctx -> {
+                                                    if (!requireAdmin(ctx.getSource())) {
+                                                        return 0;
+                                                    }
+
                                                     String name = StringArgumentType.getString(ctx, "target");
                                                     Player target = Bukkit.getPlayerExact(name);
 
@@ -152,6 +165,10 @@ public final class MoneyCommand extends BaseCommand {
                                             return builder.buildFuture();
                                         })
                                         .executes(ctx -> {
+                                            if (!requireAdmin(ctx.getSource())) {
+                                                return 0;
+                                            }
+
                                             String name = StringArgumentType.getString(ctx, "target");
                                             Player target = Bukkit.getPlayerExact(name);
 
@@ -478,5 +495,17 @@ public final class MoneyCommand extends BaseCommand {
         }
 
         return null;
+    }
+
+    private boolean requireAdmin(CommandSourceStack source) {
+        if (source.getSender().hasPermission("kmoney.admin")) {
+            return true;
+        }
+
+        source.getSender().sendMessage(
+                net.kyori.adventure.text.Component.text("You do not have permission.")
+                        .color(NamedTextColor.RED)
+        );
+        return false;
     }
 }
