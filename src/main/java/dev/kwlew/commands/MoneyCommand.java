@@ -12,7 +12,6 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -24,6 +23,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public final class MoneyCommand extends BaseCommand {
@@ -49,16 +49,28 @@ public final class MoneyCommand extends BaseCommand {
     private LiteralCommandNode<CommandSourceStack> build() {
         return Commands.literal("money")
                 .executes(ctx -> {
+                    if (!requirePermission(ctx.getSource(), "kmoney.command.money")) {
+                        return 0;
+                    }
+
                     sendSelfBalance(ctx.getSource());
                     return Command.SINGLE_SUCCESS;
                 })
                 .then(Commands.literal("balance")
                         .executes(ctx -> {
+                            if (!requirePermission(ctx.getSource(), "kmoney.command.money")) {
+                                return 0;
+                            }
+
                             sendSelfBalance(ctx.getSource());
                             return Command.SINGLE_SUCCESS;
                         })
                         .then(Commands.argument("target", ArgumentTypes.player())
                                 .executes(ctx -> {
+                                    if (!requirePermission(ctx.getSource(), "kmoney.command.money")) {
+                                        return 0;
+                                    }
+
                                     Player target = ctx.getArgument("target", PlayerSelectorArgumentResolver.class)
                                             .resolve(ctx.getSource())
                                             .getFirst();
@@ -66,8 +78,9 @@ public final class MoneyCommand extends BaseCommand {
                                     return Command.SINGLE_SUCCESS;
                                 })))
                 .then(Commands.literal("reload")
+                        .requires(source -> hasPermission(source, "kmoney.command.money.reload"))
                         .executes(ctx -> {
-                            if (!requireAdmin(ctx.getSource())) {
+                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.reload")) {
                                 return 0;
                             }
 
@@ -85,12 +98,17 @@ public final class MoneyCommand extends BaseCommand {
                                             return builder.buildFuture();
                                         })
                                         .executes(ctx -> {
+                                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.pay")) {
+                                                return 0;
+                                            }
+
                                             Player target = ctx.getArgument("target", PlayerSelectorArgumentResolver.class)
                                                     .resolve(ctx.getSource())
                                                     .getFirst();
                                             return handlePay(ctx.getSource(), target, StringArgumentType.getString(ctx, "amount"));
                                         }))))
                 .then(Commands.literal("add")
+                        .requires(source -> hasPermission(source, "kmoney.command.money.add"))
                         .then(Commands.argument("target", StringArgumentType.word())
                                 .suggests((ctx, builder) -> {
                                     for (Player player : Bukkit.getOnlinePlayers()) {
@@ -105,52 +123,23 @@ public final class MoneyCommand extends BaseCommand {
                                             return builder.buildFuture();
                                         })
                                         .executes(ctx -> {
-                                            if (!requireAdmin(ctx.getSource())) {
+                                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.add")) {
                                                 return 0;
                                             }
 
-                                            String name = StringArgumentType.getString(ctx, "target");
-                                            Player target = Bukkit.getPlayerExact(name);
-
+                                            Player target = resolveOnlineTarget(
+                                                    ctx.getSource(),
+                                                    StringArgumentType.getString(ctx, "target")
+                                            );
                                             if (target == null) {
-                                                messages.send(ctx.getSource().getSender(), "player.not-found");
                                                 return 0;
                                             }
 
                                             String amount = StringArgumentType.getString(ctx, "amount");
                                             return handleAdd(ctx.getSource(), target, amount);
                                         }))))
-                        .then(Commands.literal("remove")
-                                .then(Commands.argument("target", StringArgumentType.word())
-                                        .suggests((ctx, builder) -> {
-                                            for (Player player : Bukkit.getOnlinePlayers()) {
-                                                builder.suggest(player.getName());
-                                            }
-                                            return builder.buildFuture();
-                                        })
-                                        .then(Commands.argument("amount", StringArgumentType.word())
-                                                .suggests((ctx, builder) -> {
-                                                    List<String> suggestions = List.of("100", "1k", "5k", "10k", "100k");
-                                                    suggestions.forEach(builder::suggest);
-                                                    return builder.buildFuture();
-                                                })
-                                                .executes(ctx -> {
-                                                    if (!requireAdmin(ctx.getSource())) {
-                                                        return 0;
-                                                    }
-
-                                                    String name = StringArgumentType.getString(ctx, "target");
-                                                    Player target = Bukkit.getPlayerExact(name);
-
-                                                    if (target == null) {
-                                                        messages.send(ctx.getSource().getSender(), "player.not-found");
-                                                        return 0;
-                                                    }
-
-                                                    String amount = StringArgumentType.getString(ctx, "amount");
-                                                    return handleRemove(ctx.getSource(), target, amount);
-                                                }))))
-                .then(Commands.literal("set")
+                .then(Commands.literal("remove")
+                        .requires(source -> hasPermission(source, "kmoney.command.money.remove"))
                         .then(Commands.argument("target", StringArgumentType.word())
                                 .suggests((ctx, builder) -> {
                                     for (Player player : Bukkit.getOnlinePlayers()) {
@@ -165,15 +154,46 @@ public final class MoneyCommand extends BaseCommand {
                                             return builder.buildFuture();
                                         })
                                         .executes(ctx -> {
-                                            if (!requireAdmin(ctx.getSource())) {
+                                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.remove")) {
                                                 return 0;
                                             }
 
-                                            String name = StringArgumentType.getString(ctx, "target");
-                                            Player target = Bukkit.getPlayerExact(name);
-
+                                            Player target = resolveOnlineTarget(
+                                                    ctx.getSource(),
+                                                    StringArgumentType.getString(ctx, "target")
+                                            );
                                             if (target == null) {
-                                                messages.send(ctx.getSource().getSender(), "player.not-found");
+                                                return 0;
+                                            }
+
+                                            String amount = StringArgumentType.getString(ctx, "amount");
+                                            return handleRemove(ctx.getSource(), target, amount);
+                                        }))))
+                .then(Commands.literal("set")
+                        .requires(source -> hasPermission(source, "kmoney.command.money.set"))
+                        .then(Commands.argument("target", StringArgumentType.word())
+                                .suggests((ctx, builder) -> {
+                                    for (Player player : Bukkit.getOnlinePlayers()) {
+                                        builder.suggest(player.getName());
+                                    }
+                                    return builder.buildFuture();
+                                })
+                                .then(Commands.argument("amount", StringArgumentType.word())
+                                        .suggests((ctx, builder) -> {
+                                            List<String> suggestions = List.of("100", "1k", "5k", "10k", "100k");
+                                            suggestions.forEach(builder::suggest);
+                                            return builder.buildFuture();
+                                        })
+                                        .executes(ctx -> {
+                                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.set")) {
+                                                return 0;
+                                            }
+
+                                            Player target = resolveOnlineTarget(
+                                                    ctx.getSource(),
+                                                    StringArgumentType.getString(ctx, "target")
+                                            );
+                                            if (target == null) {
                                                 return 0;
                                             }
                                             String amount = StringArgumentType.getString(ctx, "amount");
@@ -187,6 +207,10 @@ public final class MoneyCommand extends BaseCommand {
                                     return builder.buildFuture();
                                 })
                                 .executes(ctx -> {
+                                    if (!requirePermission(ctx.getSource(), "kmoney.command.money.withdraw")) {
+                                        return 0;
+                                    }
+
                                     String amount = StringArgumentType.getString(ctx, "amount");
                                     return handleWithdraw(ctx.getSource(), amount, null);
                                 })
@@ -197,6 +221,10 @@ public final class MoneyCommand extends BaseCommand {
                                             return builder.buildFuture();
                                         })
                                         .executes(ctx -> {
+                                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.withdraw")) {
+                                                return 0;
+                                            }
+
                                             String amount = StringArgumentType.getString(ctx, "amount");
                                             String notes = StringArgumentType.getString(ctx, "notes");
                                             return handleWithdraw(ctx.getSource(), amount, notes);
@@ -206,7 +234,7 @@ public final class MoneyCommand extends BaseCommand {
 
     private int handleWithdraw(CommandSourceStack source, String amountInput, String notesAmount) {
         Player player = getPlayer(source);
-        final double amount;
+        BigDecimal amount;
         final int notes;
 
         if (player == null) {
@@ -230,29 +258,18 @@ public final class MoneyCommand extends BaseCommand {
             return 0;
         }
 
-        try {
-            amount = MoneyParser.parse(amountInput);
-        } catch (NumberFormatException e) {
-            messages.send(source.getSender(), "money.invalid-amount",
-                    messages.placeholder("amount", amountInput)
-            );
+        amount = parsePositiveAmount(source.getSender(), amountInput);
+        if (amount == null) {
             return 0;
         }
 
-        if (amount <= 0) {
-            messages.send(source.getSender(), "money.invalid-amount",
-                    messages.placeholder("amount", amountInput)
-            );
-            return 0;
-        }
+        BigDecimal playerBalance = economy.getBalance(player.getUniqueId());
+        BigDecimal total = amount.multiply(BigDecimal.valueOf(notes));
 
-        double playerBalance = economy.getBalance(player.getUniqueId());
-        double total = amount * notes;
-
-        if (total > playerBalance) {
-            messages.send(source.getSender(), "money.not-enough-money",
-                    messages.placeholder("amount", amountInput),
-                    messages.placeholder("balance", String.valueOf(playerBalance))
+        if (total.compareTo(playerBalance) > 0) {
+            messages.send(source.getSender(), "money.insufficient-funds",
+                    messages.placeholder("amount", formatMoney(total)),
+                    messages.placeholder("balance", formatMoney(playerBalance))
             );
             return 0;
         }
@@ -264,7 +281,7 @@ public final class MoneyCommand extends BaseCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private boolean createdCheck(CommandSourceStack source, double amount, int notesAmount) {
+    private boolean createdCheck(CommandSourceStack source, BigDecimal amount, int notesAmount) {
         Player player = getPlayer(source);
 
         assert player != null;
@@ -277,30 +294,31 @@ public final class MoneyCommand extends BaseCommand {
         ItemMeta meta = paper.getItemMeta();
 
         String symbol = config.getCurrencySymbol();
-        String formatted = Formatter.format(amount*notesAmount, symbol);
+        BigDecimal total = amount.multiply(BigDecimal.valueOf(notesAmount));
+        String formatted = Formatter.format(total, symbol);
 
         meta.displayName(
-            messages.get("check.create-name")
+            messages.getRaw("check.create-name")
                     .decoration(TextDecoration.BOLD, true)
                     .decoration(TextDecoration.ITALIC, false)
         );
 
         meta.lore(java.util.List.of(
-                messages.get("check-create-value", messages.placeholder("amount", formatted))
+                messages.getRaw("check.create-value", messages.placeholder("amount", formatted))
                         .decoration(TextDecoration.ITALIC, false),
-                messages.get("check-create-creator", messages.placeholder("player", source.getSender().getName()))
+                messages.getRaw("check.create-creator", messages.placeholder("player", source.getSender().getName()))
                         .decoration(TextDecoration.ITALIC, false)
         ));
 
-        meta.getPersistentDataContainer().set(key, PersistentDataType.DOUBLE, amount);
+        meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, amount.toPlainString());
 
         paper.setItemMeta(meta);
 
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
         player.getInventory().addItem(paper);
-        economy.removeBalance(player.getUniqueId(), amount*notesAmount);
+        economy.removeBalance(player.getUniqueId(), total);
 
-        messages.send(source.getSender(), "check.sucess", messages.placeholder("amount", formatted));
+        messages.send(source.getSender(), "check.success", messages.placeholder("amount", formatted));
 
         return true;
     }
@@ -327,21 +345,8 @@ public final class MoneyCommand extends BaseCommand {
     }
 
     private int handleSet(CommandSourceStack source, Player target, String amountInput) {
-        final double amount;
-
-        try {
-            amount = MoneyParser.parse(amountInput);
-        } catch (NumberFormatException e) {
-            messages.send(source.getSender(), "money.invalid-amount",
-                    messages.placeholder("amount", amountInput)
-            );
-            return 0;
-        }
-
-        if (amount <= 0) {
-            messages.send(source.getSender(), "money.invalid-amount",
-                    messages.placeholder("amount", amountInput)
-            );
+        BigDecimal amount = parsePositiveAmount(source.getSender(), amountInput);
+        if (amount == null) {
             return 0;
         }
 
@@ -362,21 +367,8 @@ public final class MoneyCommand extends BaseCommand {
 
     private int handleRemove(CommandSourceStack source, Player target, String amountInput) {
 
-        final double amount;
-
-        try {
-            amount = MoneyParser.parse(amountInput);
-        } catch (NumberFormatException e) {
-            messages.send(source.getSender(), "money.invalid-amount",
-                    messages.placeholder("amount", amountInput)
-            );
-            return 0;
-        }
-
-        if (amount <= 0) {
-            messages.send(source.getSender(), "money.invalid-amount",
-                    messages.placeholder("amount", amountInput)
-            );
+        BigDecimal amount = parsePositiveAmount(source.getSender(), amountInput);
+        if (amount == null) {
             return 0;
         }
 
@@ -397,30 +389,18 @@ public final class MoneyCommand extends BaseCommand {
 
     private int handleAdd(CommandSourceStack source, Player target, String amountInput) {
 
-        final double amount;
-        try {
-            amount = MoneyParser.parse(amountInput);
-        } catch (NumberFormatException e) {
-            messages.send(source.getSender(), "money.invalid-amount",
-                    messages.placeholder("amount", amountInput)
-            );
-            return 0;
-        }
-
-        if (amount <= 0) {
-            messages.send(source.getSender(), "money.invalid-amount",
-                    messages.placeholder("amount", amountInput)
-            );
+        BigDecimal amount = parsePositiveAmount(source.getSender(), amountInput);
+        if (amount == null) {
             return 0;
         }
 
         economy.addBalance(target.getUniqueId(), amount);
         String formattedAmount = formatMoney(amount);
-        messages.send(source.getSender(), "money.pay-sent",
+        messages.send(source.getSender(), "money.added",
                 messages.placeholder("player", target.getName()),
                 messages.placeholder("amount", formattedAmount)
         );
-        messages.send(target, "money.pay-received",
+        messages.send(target, "money.got-added",
                 messages.placeholder("player", source.getSender().getName()),
                 messages.placeholder("amount", formattedAmount)
         );
@@ -440,28 +420,16 @@ public final class MoneyCommand extends BaseCommand {
             return 0;
         }
 
-        final double amount;
-        try {
-            amount = MoneyParser.parse(amountInput);
-        } catch (NumberFormatException ex) {
-            messages.send(sender, "money.invalid-amount",
-                    messages.placeholder("amount", amountInput)
-            );
-            return 0;
-        }
-
-        if (amount <= 0) {
-            messages.send(sender, "money.invalid-amount",
-                    messages.placeholder("amount", amountInput)
-            );
+        BigDecimal amount = parsePositiveAmount(sender, amountInput);
+        if (amount == null) {
             return 0;
         }
 
         economy.createAccount(sender.getUniqueId());
         economy.createAccount(target.getUniqueId());
 
-        double senderBalance = economy.getBalance(sender.getUniqueId());
-        if (senderBalance < amount) {
+        BigDecimal senderBalance = economy.getBalance(sender.getUniqueId());
+        if (senderBalance.compareTo(amount) < 0) {
             messages.send(sender, "money.insufficient-funds",
                     messages.placeholder("balance", formatMoney(senderBalance)),
                     messages.placeholder("amount", formatMoney(amount))
@@ -497,15 +465,47 @@ public final class MoneyCommand extends BaseCommand {
         return null;
     }
 
-    private boolean requireAdmin(CommandSourceStack source) {
-        if (source.getSender().hasPermission("kmoney.admin")) {
+    private Player resolveOnlineTarget(CommandSourceStack source, String targetName) {
+        Player target = Bukkit.getPlayerExact(targetName);
+        if (target != null) {
+            return target;
+        }
+
+        messages.send(source.getSender(), "player.not-found");
+        return null;
+    }
+
+    private BigDecimal parsePositiveAmount(CommandSender sender, String amountInput) {
+        final BigDecimal amount;
+        try {
+            amount = MoneyParser.parse(amountInput);
+        } catch (NumberFormatException ex) {
+            messages.send(sender, "money.invalid-amount",
+                    messages.placeholder("amount", amountInput)
+            );
+            return null;
+        }
+
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            messages.send(sender, "money.invalid-amount",
+                    messages.placeholder("amount", amountInput)
+            );
+            return null;
+        }
+
+        return amount;
+    }
+
+    private boolean requirePermission(CommandSourceStack source, String permission) {
+        if (hasPermission(source, permission)) {
             return true;
         }
 
-        source.getSender().sendMessage(
-                net.kyori.adventure.text.Component.text("You do not have permission.")
-                        .color(NamedTextColor.RED)
-        );
+        messages.send(source.getSender(), "money.no-permission");
         return false;
+    }
+
+    private boolean hasPermission(CommandSourceStack source, String permission) {
+        return source.getSender().hasPermission(permission) || source.getSender().hasPermission("kmoney.admin");
     }
 }

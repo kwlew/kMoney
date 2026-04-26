@@ -1,16 +1,17 @@
 package dev.kwlew.economy.api;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface EconomyService {
 
-    double getBalance(UUID uuid);
+    BigDecimal getBalance(UUID uuid);
 
-    void setBalance(UUID uuid, double amount);
+    void setBalance(UUID uuid, BigDecimal amount);
 
-    void addBalance(UUID uuid, double amount);
+    void addBalance(UUID uuid, BigDecimal amount);
 
-    void removeBalance(UUID uuid, double amount);
+    void removeBalance(UUID uuid, BigDecimal amount);
 
     boolean adminMessage(UUID uuid);
 

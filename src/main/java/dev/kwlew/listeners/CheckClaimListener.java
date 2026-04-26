@@ -16,6 +16,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.math.BigDecimal;
+
 public class CheckClaimListener implements ListenerComponent {
 
     private final NamespacedKey key;
@@ -53,7 +55,7 @@ public class CheckClaimListener implements ListenerComponent {
         if (item.getItemMeta() == null) return;
         ItemMeta meta = item.getItemMeta();
 
-        Double value = meta.getPersistentDataContainer().get(key, PersistentDataType.DOUBLE);
+        BigDecimal value = getCheckValue(meta);
         if (value == null) return;
 
         Player player = event.getPlayer();
@@ -62,7 +64,7 @@ public class CheckClaimListener implements ListenerComponent {
 
         if (player.isSneaking()) {
             int amount = item.getAmount();
-            double total = value * amount;
+            BigDecimal total = value.multiply(BigDecimal.valueOf(amount));
 
             economy.addBalance(player.getUniqueId(), total);
 
@@ -71,7 +73,7 @@ public class CheckClaimListener implements ListenerComponent {
             String formatted = Formatter.format(total, config.getCurrencySymbol());
 
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
-            messages.send(player, "check-redeem",
+            messages.send(player, "check.redeem",
                     messages.placeholder("amount", formatted));
             return;
         }
@@ -84,8 +86,26 @@ public class CheckClaimListener implements ListenerComponent {
 
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
 
-        messages.send(player, "check-redeem",
+        messages.send(player, "check.redeem",
                 messages.placeholder("amount", formatted));
 
+    }
+
+    private BigDecimal getCheckValue(ItemMeta meta) {
+        String encoded = meta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
+        if (encoded != null) {
+            try {
+                return new BigDecimal(encoded);
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+
+        Double legacy = meta.getPersistentDataContainer().get(key, PersistentDataType.DOUBLE);
+        if (legacy != null) {
+            return BigDecimal.valueOf(legacy);
+        }
+
+        return null;
     }
 }

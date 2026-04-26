@@ -2,24 +2,30 @@ package dev.kwlew.economy.utils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.math.BigDecimal;
 
 // Dont touch this broski
 public class MoneyParser {
 
-    private static final Map<String, Double> SUFFIXES = new LinkedHashMap<>();
+    private static final BigDecimal THOUSAND = new BigDecimal("1000");
+    private static final Map<String, BigDecimal> SUFFIXES = new LinkedHashMap<>();
 
     static {
-        SUFFIXES.put("ss", Math.pow(1000, 8)); // 1e24
-        SUFFIXES.put("s",  Math.pow(1000, 7)); // 1e21
-        SUFFIXES.put("qq", Math.pow(1000, 6)); // 1e18
-        SUFFIXES.put("q",  Math.pow(1000, 5)); // 1e15
-        SUFFIXES.put("t",  Math.pow(1000, 4)); // 1e12
-        SUFFIXES.put("b",  Math.pow(1000, 3)); // 1e9
-        SUFFIXES.put("m",  Math.pow(1000, 2)); // 1e6
-        SUFFIXES.put("k",  Math.pow(1000, 1)); // 1e3
+        SUFFIXES.put("udc", THOUSAND.pow(12)); // 1e36
+        SUFFIXES.put("dc",  THOUSAND.pow(11)); // 1e33
+        SUFFIXES.put("no",  THOUSAND.pow(10)); // 1e30
+        SUFFIXES.put("oc",  THOUSAND.pow(9)); // 1e27
+        SUFFIXES.put("ss", THOUSAND.pow(8)); // 1e24
+        SUFFIXES.put("s",  THOUSAND.pow(7)); // 1e21
+        SUFFIXES.put("qq", THOUSAND.pow(6)); // 1e18
+        SUFFIXES.put("q",  THOUSAND.pow(5)); // 1e15
+        SUFFIXES.put("t",  THOUSAND.pow(4)); // 1e12
+        SUFFIXES.put("b",  THOUSAND.pow(3)); // 1e9
+        SUFFIXES.put("m",  THOUSAND.pow(2)); // 1e6
+        SUFFIXES.put("k",  THOUSAND); // 1e3
     }
 
-    public static double parse(String input) throws NumberFormatException {
+    public static BigDecimal parse(String input) throws NumberFormatException {
 
         if (input == null || input.isEmpty()) {
             throw new NumberFormatException("Empty input");
@@ -32,7 +38,7 @@ public class MoneyParser {
             throw new NumberFormatException("Invalid input");
         }
 
-        for (Map.Entry<String, Double> entry : SUFFIXES.entrySet()) {
+        for (Map.Entry<String, BigDecimal> entry : SUFFIXES.entrySet()) {
             String suffix = entry.getKey();
 
             if (input.endsWith(suffix)) {
@@ -42,11 +48,11 @@ public class MoneyParser {
                     throw new NumberFormatException("Invalid number format");
                 }
 
-                double value = Double.parseDouble(numberPart);
-                return value * entry.getValue();
+                BigDecimal value = new BigDecimal(numberPart);
+                return value.multiply(entry.getValue());
             }
         }
 
-        return Double.parseDouble(input);
+        return new BigDecimal(input);
     }
 }

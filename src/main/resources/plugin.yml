@@ -44,7 +44,10 @@ permissions:
     description: Full access to admin money commands.
     default: op
     children:
+      kmoney.command.money: true
       kmoney.command.money.reload: true
       kmoney.command.money.add: true
       kmoney.command.money.remove: true
       kmoney.command.money.set: true
+      kmoney.command.money.withdraw: true
+      kmoney.command.money.pay: true

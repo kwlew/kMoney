@@ -9,6 +9,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
+
 public class PlaceholderAPI extends PlaceholderExpansion {
 
     private final EconomyService economy;
@@ -46,12 +48,12 @@ public class PlaceholderAPI extends PlaceholderExpansion {
         if (player == null) return "";
 
         if (params.equalsIgnoreCase("balance")) {
-            double balance = economy.getBalance(player.getUniqueId());
-            return String.valueOf(balance);
+            BigDecimal balance = economy.getBalance(player.getUniqueId());
+            return balance.stripTrailingZeros().toPlainString();
         }
 
         if (params.equalsIgnoreCase("balance_formatted")) {
-            double balance = economy.getBalance(player.getUniqueId());
+            BigDecimal balance = economy.getBalance(player.getUniqueId());
             String symbol = config.getCurrencySymbol();
             return dev.kwlew.economy.utils.Formatter.format(balance, symbol);
         }
