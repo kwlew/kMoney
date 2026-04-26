@@ -2,8 +2,10 @@ package dev.kwlew.economy;
 
 import dev.kwlew.economy.api.EconomyService;
 import dev.kwlew.economy.storage.EconomyStorage;
+import dev.kwlew.kernel.LifecycleComponent;
 import dev.kwlew.managers.config.ConfigManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -11,7 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class EconomyManager implements EconomyService {
+public class EconomyManager implements EconomyService, LifecycleComponent {
 
     private final EconomyStorage storage;
     private final ConfigManager config;
@@ -20,6 +22,7 @@ public class EconomyManager implements EconomyService {
     private final Set<UUID> dirty = ConcurrentHashMap.newKeySet();
 
     private final JavaPlugin plugin;
+    private BukkitTask autosaveTask;
 
     public EconomyManager(EconomyStorage storage, ConfigManager config, JavaPlugin plugin) {
         this.storage = storage;
@@ -76,7 +79,7 @@ public class EconomyManager implements EconomyService {
         }
     }
 
-    private void saveDirty() {
+    private synchronized void saveDirty() {
         for (UUID uuid : new HashSet<>(dirty)) {
             Double balance = cache.get(uuid);
             if (balance == null) continue;
@@ -87,12 +90,28 @@ public class EconomyManager implements EconomyService {
     }
 
     private void startAutosave() {
-        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, this::saveDirty, 20L * 30, 20L * 30);
+        autosaveTask = plugin.getServer().getScheduler().runTaskTimerAsynchronously(
+                plugin,
+                this::saveDirty,
+                20L * 30,
+                20L * 30
+        );
     }
 
-    public void saveAll() {
+    @Override
+    public synchronized void shutdown() {
+        if (autosaveTask != null) {
+            autosaveTask.cancel();
+        }
+
+        saveAll();
+    }
+
+    public synchronized void saveAll() {
         for (Map.Entry<UUID, Double> entry : cache.entrySet()) {
             storage.setBalance(entry.getKey(), entry.getValue());
         }
+
+        dirty.clear();
     }
 }
