@@ -1,6 +1,19 @@
+# ============================================
+# kMoney Configuration
+# ============================================
+# This configuration file controls the core behavior of the kMoney economy plugin.
+# Please read the documentation for each setting carefully.
 
-# Symbol for the currency.
+# Currency Symbol
+# The symbol displayed when formatting monetary amounts in messages and balance displays.
+# Common options: $, €, £, ¥, Gold, Coin
+# Example outputs: $100, €1.5K, £2.3M
 symbol: "$"
 
-# Starting balance for new player accounts.
+# Starting Balance
+# The initial balance given to players when their account is first created.
+# This is only set once per player when they first join the server.
+# Existing player accounts are not affected by changes to this value.
+# Use standard number format (e.g., "100.0", "1000", "500.50")
+# Supports large numbers: "1k" = 1000, "1m" = 1000000, "1b" = 1000000000
 default-balance: "100.0"
