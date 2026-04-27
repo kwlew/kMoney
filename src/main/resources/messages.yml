@@ -1,35 +1,199 @@
+# ============================================
+# kMoney Messages Configuration
+# ============================================
+# This file controls all user-facing messages and notifications in the kMoney plugin.
+# 
+# SYSTEM OVERVIEW:
+# This configuration uses:
+# 1. MiniMessage Format - Adventure API text formatting with tags
+# 2. Prefix System - Automatic message prefix prepended to all messages
+# 3. Placeholder System - Dynamic values inserted into messages
+#
+# ============================================
+# MINIMESSAGE FORMAT GUIDE
+# ============================================
+# MiniMessage allows rich text formatting using tags. Tags are enclosed in angle brackets.
+# 
+# COLORS (use any of these):
+#   - Standard: <black>, <dark_blue>, <dark_green>, <dark_aqua>, <dark_red>, <dark_purple>,
+#             <gold>, <gray>, <dark_gray>, <blue>, <green>, <aqua>, <red>, <light_purple>, <yellow>, <white>
+#   - Hex Color: <#FF0000> (HTML color code format)
+#   - Named Colors: <aqua>, <red>, <green>, <yellow>, etc.
+#
+# TEXT DECORATIONS:
+#   - <bold>Bold Text</bold> - Makes text bold
+#   - <italic>Italic Text</italic> - Makes text italic
+#   - <underlined>Underlined Text</underlined> - Underlines text
+#   - <strikethrough>Strikethrough</strikethrough> - Strikes through text
+#   - <obfuscated>Obfuscated</obfuscated> - Scrambled/magic text
+#
+# CLOSING TAGS:
+#   - </> - Closes all formatting
+#   - <reset> - Resets to default color
+#
+# EXAMPLES:
+#   <red>Error: <yellow>Invalid input</yellow></red>
+#   <bold><green>SUCCESS!</green></bold>
+#   <gold>You have <aqua>1.5K</aqua> gold</gold>
+#   <#FF6B6B>Custom Red Color</> 
+#
+# ============================================
+# PREFIX SYSTEM
+# ============================================
+#
+# Usage:
+#   - prefix: "<dark_gray>[<aqua>kMoney<dark_gray>] "
+#   - Any message will automatically have this prepended
+#   - Example output: [kMoney] Your balance is $100
+#
+# Tips:
+#   - Make prefix visually distinct with colors/brackets
+#   - Keep it short so messages don't get too long
+#   - Use brackets, parentheses, or symbols for clarity
+#   - Can include color codes and decorations
+#
+# IMPORTANT: Only messages sent via messages.send() get the prefix.
+# Messages from getRaw() do NOT include the prefix (used for item lore, etc.)
+#
+# ============================================
+# PLACEHOLDER SYSTEM
+# ============================================
+# Placeholders are dynamic values that replace tags in messages at runtime.
+# Placeholders are marked with angle brackets inside the message text.
+#
+# COMMON PLACEHOLDERS (used in this plugin):
+#   - <player> - The player's name (inserted by code)
+#   - <amount> - Formatted monetary amount (inserted by code)
+#   - <balance> - The player's current balance (inserted by code)
+#
+# ============================================
+# MESSAGE CATEGORIES
+# ============================================
+# Messages are organized by category for easier management:
+#   - prefix: Global prefix applied to all messages
+#   - player: Messages related to player validation
+#   - money: Economy operation messages
+#   - check: Money check (physical item) messages
+#   - usage: Help text for command usage
+#
+# ============================================
+
 prefix: "<dark_gray>[<aqua>kMoney<dark_gray>] "
 
+# ============================================
+# PLAYER MESSAGES
+# ============================================
+# Messages related to player validation and player-specific operations.
+#
 player:
   not-found: "<red>Player not found."
   inventory-full: "<red>Your inventory is full."
 
+# ============================================
+# MONEY COMMAND MESSAGES
+# ============================================
+# Core economy operation messages for the /money command.
+# These messages use placeholders like <player>, <amount>, and <balance>
+# that are dynamically inserted by the command handler.
+#
 money:
+  # Shown when a command is executed outside of Minecraft (e.g., console without player context)
   player-only: "<red>This command can only be used by a player."
+  
+  # Shown when a player lacks permission for a command
   no-permission: "<red>You do not have permission."
+  
+  # Shown when a player checks their own balance
+  # Placeholder: <balance> = formatted balance amount
   balance-self: "<gray>Your balance is <green><balance>"
+  
+  # Shown when a player checks another player's balance
+  # Placeholders: <player> = target player name, <balance> = their balance
   balance-other: "<gray><player>'s balance is <green><balance>"
+  
+  # Shown when configuration and messages are reloaded
   reloaded: "<gray>Configuration reloaded."
+  
+  # Shown when a monetary amount format is invalid
+  # Placeholder: <amount> = the invalid input
   invalid-amount: "<red>Invalid amount: <amount>"
+  
+  # Shown when a player tries to send money but lacks sufficient balance
+  # Placeholders: <balance> = current balance, <amount> = required amount
   insufficient-funds: "<red>You do not have enough money. Balance: <balance>, needed: <amount>"
+  
+  # Shown when a player tries to send money to themselves
   same-player: "<red>You cannot pay yourself."
+  
+  # Shown when a player tries to withdraw more than 64 money checks (Minecraft stack limit)
   max-notes: "<red>You cannot withdraw more than 64 notes."
+  
+  # Shown to admin when they set a player's balance
+  # Placeholders: <player> = target player, <amount> = new balance
   set: "<gray>Set <yellow><player><gray>'s balance to <green><amount><gray>."
+  
+  # Shown to a player when their balance is set by an admin
+  # Placeholders: <player> = admin name, <amount> = new balance
   got-set: "<gray>Your balance was set to <green><amount><gray> by <yellow><player><gray>."
+  
+  # Shown to admin when they remove money from a player
+  # Placeholders: <player> = target player, <amount> = amount removed
   removed: "<gray>Removed <green><amount><gray> from <yellow><player><gray>."
+  
+  # Shown to a player when money is removed from their balance
+  # Placeholders: <player> = admin name, <amount> = amount removed
   got-removed: "<gray><yellow><player><gray> removed <green><amount><gray> from your balance."
+  
+  # Shown to admin when they add money to a player
+  # Placeholders: <player> = target player, <amount> = amount added
   added: "<gray>Added <green><amount><gray> to <yellow><player><gray>."
+  
+  # Shown to a player when money is added to their balance
+  # Placeholders: <player> = admin name, <amount> = amount added
   got-added: "<gray><yellow><player><gray> added <green><amount><gray> to your balance."
+  
+  # Shown to sender when they successfully send money to another player
+  # Placeholders: <amount> = amount sent, <player> = recipient name
   pay-sent: "<gray>You sent <green><amount> <gray>to <yellow><player><gray>."
+  
+  # Shown to recipient when they receive money from another player
+  # Placeholders: <amount> = amount received, <player> = sender name
   pay-received: "<gray>You received <green><amount> <gray>from <yellow><player><gray>."
 
+# ============================================
+# MONEY CHECK MESSAGES
+# ============================================
+# Messages related to physical money checks (paper items with embedded value).
+# Money checks are created with /money withdraw and can be traded between players.
+#
 check:
+  # Display name of the money check item in player inventory
   create-name: "<green>Money Check"
+  
+  # Shown on check item as creator information (lore line)
+  # Placeholder: <player> = creator player name
+  # NOTE: This uses getRaw() so no prefix is added (used as item lore)
   create-creator: "<gray>Created by: <yellow><player>"
+  
+  # Shown on check item as value information (lore line)
+  # Placeholder: <amount> = check value
+  # NOTE: This uses getRaw() so no prefix is added (used as item lore)
   create-value: "<gray>Value: <green><amount>"
+  
+  # Shown when a player successfully creates a money check
+  # Placeholder: <amount> = check value
   success: "<gray>You created a money check for <green><amount><gray>."
+  
+  # Shown when a player redeems a money check (future feature)
+  # Placeholder: <amount> = check value
   redeem: "<gray>You redeemed <green><amount><gray>."
 
+# ============================================
+# USAGE/HELP MESSAGES
+# ============================================
+# Command usage help messages shown to players when they use commands incorrectly.
+# These are error messages explaining proper command syntax.
+#
 usage:
   pay: "<red>Usage: /pay <player> <amount> or /money pay <player> <amount>"
   add: "<red>Usage: /money add <player> <amount>"

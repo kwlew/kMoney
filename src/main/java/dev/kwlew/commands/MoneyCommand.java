@@ -4,7 +4,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.kwlew.economy.utils.Formatter;
-import dev.kwlew.economy.utils.MoneyParser;
+import dev.kwlew.economy.utils.MoneyValidator;
 import dev.kwlew.kernel.Inject;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -26,6 +26,21 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Handles the /money command for balance queries, transfers, and money checks.
+ * <p>
+ * Supports subcommands:
+ * - /money - View own balance
+ * - /money balance [player] - Check balance of yourself or another player
+ * - /money pay &lt;player&gt; &lt;amount&gt; - Send money to another player
+ * - /money add &lt;player&gt; &lt;amount&gt; - Admin: Add money to a player (requires permission)
+ * - /money remove &lt;player&gt; &lt;amount&gt; - Admin: Remove money from a player (requires permission)
+ * - /money set &lt;player&gt; &lt;amount&gt; - Admin: Set a player's balance (requires permission)
+ * - /money withdraw &lt;amount&gt; [notes] - Create physical money checks
+ * - /money reload - Admin: Reload plugin configuration (requires permission)
+ * <p>
+ * All monetary amounts support suffixes: k (thousand), m (million), b (billion), t (trillion), etc.
+ */
 public final class MoneyCommand extends BaseCommand {
 
     private final NamespacedKey key;
@@ -246,15 +261,15 @@ public final class MoneyCommand extends BaseCommand {
 
         try {
             notes = notesAmount == null ? 1 : Integer.parseInt(notesAmount);
+            MoneyValidator.validateNotesCount(notes);
         } catch (NumberFormatException e) {
             messages.send(source.getSender(), "money.invalid-amount",
                     messages.placeholder("amount", notesAmount)
             );
             return 0;
-        }
-
-        if (notes <= 0 || notes > 64) {
+        } catch (IllegalArgumentException e) {
             messages.send(source.getSender(), "money.max-notes");
+            plugin.getLogger().warning("Invalid notes count from " + source.getSender().getName() + ": " + notesAmount);
             return 0;
         }
 
@@ -476,24 +491,17 @@ public final class MoneyCommand extends BaseCommand {
     }
 
     private BigDecimal parsePositiveAmount(CommandSender sender, String amountInput) {
-        final BigDecimal amount;
         try {
-            amount = MoneyParser.parse(amountInput);
-        } catch (NumberFormatException ex) {
+            BigDecimal amount = MoneyValidator.validateMoneyAmount(amountInput);
+            MoneyValidator.validatePositiveAmount(amount);
+            return amount;
+        } catch (IllegalArgumentException ex) {
             messages.send(sender, "money.invalid-amount",
                     messages.placeholder("amount", amountInput)
             );
+            plugin.getLogger().warning("Invalid money amount from " + sender.getName() + ": " + amountInput + " (" + ex.getMessage() + ")");
             return null;
         }
-
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            messages.send(sender, "money.invalid-amount",
-                    messages.placeholder("amount", amountInput)
-            );
-            return null;
-        }
-
-        return amount;
     }
 
     private boolean requirePermission(CommandSourceStack source, String permission) {

@@ -14,6 +14,19 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Manages player economy accounts with in-memory caching and persistent storage.
+ * 
+ * This implementation provides:
+ * - In-memory balance cache for fast access
+ * - Automatic dirty tracking for efficient persistence
+ * - Asynchronous autosave every 30 seconds
+ * - Thread-safe balance operations
+ * - Prevents negative balances
+ * 
+ * The economy manager uses a write-back cache pattern where changes are cached in memory
+ * and periodically persisted to storage in the background.
+ */
 public class EconomyManager implements EconomyService, LifecycleComponent {
 
     private final EconomyStorage storage;
@@ -25,6 +38,13 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
     private final JavaPlugin plugin;
     private BukkitTask autosaveTask;
 
+    /**
+     * Creates a new economy manager.
+     *
+     * @param storage the persistence layer for saving/loading balances
+     * @param config the configuration manager for defaults
+     * @param plugin the plugin instance for scheduling tasks
+     */
     public EconomyManager(EconomyStorage storage, ConfigManager config, JavaPlugin plugin) {
         this.storage = storage;
         this.config = config;
@@ -80,6 +100,10 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
         }
     }
 
+    /**
+     * Saves all modified accounts to persistent storage.
+     * Runs synchronously and should only be called when necessary.
+     */
     private synchronized void saveDirty() {
         for (UUID uuid : new HashSet<>(dirty)) {
             BigDecimal balance = cache.get(uuid);
@@ -90,6 +114,9 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
         }
     }
 
+    /**
+     * Starts the automatic save task that runs every 30 seconds asynchronously.
+     */
     private void startAutosave() {
         autosaveTask = plugin.getServer().getScheduler().runTaskTimerAsynchronously(
                 plugin,
@@ -108,6 +135,10 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
         saveAll();
     }
 
+    /**
+     * Immediately saves all cached balances to persistent storage.
+     * Used during plugin shutdown to ensure no data loss.
+     */
     public synchronized void saveAll() {
         for (Map.Entry<UUID, BigDecimal> entry : cache.entrySet()) {
             storage.setBalance(entry.getKey(), entry.getValue());

@@ -3,6 +3,25 @@ package dev.kwlew.economy.utils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+/**
+ * Formats monetary amounts with currency symbol and magnitude suffixes for display.
+ * <p>
+ * Large numbers are automatically scaled with suffixes:
+ * - K: thousands (1e3)
+ * - M: millions (1e6)
+ * - B: billions (1e9)
+ * - T: trillions (1e12)
+ * - Q: quadrillions (1e15)
+ * - QQ: quintillions (1e18)
+ * - S: sextillions (1e21)
+ * - SS: septillions (1e24)
+ * - OC: octillions (1e27)
+ * - NO: nonillions (1e30)
+ * - DC: decillions (1e33)
+ * - UDC: undecillions (1e36)
+ * <p>
+ * Examples: "$100", "$1.5K", "$2.3M", "-$500"
+ */
 public class Formatter {
     private static final String[] SUFFIXES = {
             "",
@@ -22,6 +41,13 @@ public class Formatter {
     private static final BigDecimal THOUSAND = new BigDecimal("1000");
     private static final int DISPLAY_SCALE = 2;
 
+    /**
+     * Formats a monetary amount with currency symbol and suffix.
+     *
+     * @param amount the amount to format
+     * @param symbol the currency symbol (e.g., "$", "€", "£")
+     * @return formatted string with symbol, value, and suffix (e.g., "$1.5M")
+     */
     public static String format(BigDecimal amount, String symbol) {
         boolean negative = amount.signum() < 0;
         BigDecimal value = amount.abs();
@@ -49,3 +75,4 @@ public class Formatter {
                 .toPlainString();
     }
 }
+

@@ -3,7 +3,7 @@ description: $description
 version: '${version}'
 
 main: dev.kwlew.kMoney
-api-version: '26.1.2'
+api-version: '1.21'
 
 author: KWLEW
 website: https://kwlew.dev
