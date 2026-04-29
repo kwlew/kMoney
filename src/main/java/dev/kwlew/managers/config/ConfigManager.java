@@ -1,6 +1,5 @@
 package dev.kwlew.managers.config;
 
-import dev.kwlew.kMoney;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.math.BigDecimal;

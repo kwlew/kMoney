@@ -32,16 +32,25 @@ public class VaultHook implements LifecycleComponent {
 
         ServicesManager services = plugin.getServer().getServicesManager();
 
+        boolean hookedVault = false;
+        boolean hookedVaultUnlocked = false;
+
         if (classExists("net.milkbowl.vault2.economy.Economy")) {
             vaultUnlockedEconomy = new VaultUnlockedEconomy(economy, config);
             services.register(net.milkbowl.vault2.economy.Economy.class, vaultUnlockedEconomy, plugin, ServicePriority.Highest);
             plugin.getLogger().info("\u001B[36mkMoney hooked to [VaultUnlocked]\u001B[0m");
+            hookedVaultUnlocked = true;
         }
 
         if (classExists("net.milkbowl.vault.economy.Economy")) {
             vaultEconomy = new VaultEconomy(economy, config);
             services.register(net.milkbowl.vault.economy.Economy.class, vaultEconomy, plugin, ServicePriority.Highest);
             plugin.getLogger().info("\u001B[36mkMoney hooked to [Vault]\u001B[0m");
+            hookedVault = true;
+        }
+
+        if (!hookedVault && !hookedVaultUnlocked) {
+            plugin.getLogger().warning("Couldn't hook to Vault! Is it installed?");
         }
     }
 

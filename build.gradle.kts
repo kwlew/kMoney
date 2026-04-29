@@ -15,7 +15,7 @@ repositories {
 dependencies {
     paperweight.paperDevBundle("26.1.2.build.+")
     compileOnly ("me.clip:placeholderapi:2.12.2")
-    compileOnly ("net.milkbowl.vault:VaultUnlockedAPI:2.3")
+    compileOnly ("net.milkbowl.vault:VaultUnlockedAPI:2.16")
 }
 
 java {
