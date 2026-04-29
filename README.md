@@ -22,7 +22,7 @@
 - Java toolchain: `25`
 - Optional plugins:
   - PlaceholderAPI
-  - Vault
+  - Vault (VaultUnlocked/Vault2)
 
 ## Installation
 
@@ -71,4 +71,3 @@ Examples:
 `src/main/resources/messages.yml`
 
 - All user-facing messages, including check text and command feedback.
-

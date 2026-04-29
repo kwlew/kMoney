@@ -6,6 +6,7 @@ import dev.kwlew.economy.storage.EcoPersistence;
 import dev.kwlew.economy.storage.EconomyStorage;
 import dev.kwlew.commands.MoneyCommand;
 import dev.kwlew.hooks.papi.PlaceholderAPIHook;
+import dev.kwlew.hooks.vault.VaultHook;
 import dev.kwlew.listeners.CheckClaimListener;
 import dev.kwlew.listeners.CraftListener;
 import dev.kwlew.listeners.JoinListener;
@@ -70,6 +71,7 @@ public class Bootstrap {
 
     private void initHooks() {
         registry.resolve(PlaceholderAPIHook.class);
+        registry.resolve(VaultHook.class);
     }
 
     private void lifecycle(Consumer<LifecycleComponent> action) {
