@@ -19,8 +19,6 @@ import java.util.UUID;
 
 public class VaultUnlockedEconomy implements Economy {
 
-    private static final String DEFAULT_CURRENCY_NAME = "Money";
-
     private final EconomyService economy;
     private final ConfigManager config;
 
@@ -86,7 +84,7 @@ public class VaultUnlockedEconomy implements Economy {
 
     @Override
     public @NotNull String defaultCurrencyNamePlural(@NotNull String pluginName) {
-        return pluralize(currencyNameSingular());
+        return VaultCurrency.pluralize(currencyNameSingular());
     }
 
     @Override
@@ -255,7 +253,7 @@ public class VaultUnlockedEconomy implements Economy {
 
     @Override
     public boolean isAccountMember(@NotNull String pluginName, @NotNull UUID accountID, @NotNull UUID uuid) {
-        return accountID.equals(uuid);
+        return isAccountOwner(pluginName, accountID, uuid);
     }
 
     @Override
@@ -320,22 +318,6 @@ public class VaultUnlockedEconomy implements Economy {
     }
 
     private String currencyNameSingular() {
-        String symbol = config.getCurrencySymbol();
-        if (symbol != null) {
-            String trimmed = symbol.trim();
-            if (!trimmed.isEmpty() && trimmed.chars().allMatch(Character::isLetter)) {
-                return trimmed;
-            }
-        }
-
-        return DEFAULT_CURRENCY_NAME;
-    }
-
-    private String pluralize(String name) {
-        if (name.endsWith("s")) {
-            return name;
-        }
-
-        return name + "s";
+        return VaultCurrency.resolveCurrencyName(config);
     }
 }

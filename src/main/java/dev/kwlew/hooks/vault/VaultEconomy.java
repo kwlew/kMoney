@@ -17,8 +17,6 @@ import java.util.UUID;
 @SuppressWarnings("deprecation")
 public class VaultEconomy implements Economy {
 
-    private static final String DEFAULT_CURRENCY_NAME = "Money";
-
     private final EconomyService economy;
     private final ConfigManager config;
 
@@ -54,12 +52,12 @@ public class VaultEconomy implements Economy {
 
     @Override
     public String currencyNamePlural() {
-        return pluralize(currencyNameSingular());
+        return VaultCurrency.pluralize(currencyNameSingular());
     }
 
     @Override
     public String currencyNameSingular() {
-        return resolveCurrencyName();
+        return VaultCurrency.resolveCurrencyName(config);
     }
 
     @Override
@@ -256,7 +254,7 @@ public class VaultEconomy implements Economy {
 
     private EconomyResponse withdraw(UUID uuid, double amount) {
         if (isInvalidAmount(amount)) {
-            return new EconomyResponse(BigDecimal.ZERO, economy.getBalance(uuid),
+            return new EconomyResponse(0.0, economy.getBalance(uuid).doubleValue(),
                     EconomyResponse.ResponseType.FAILURE, "Invalid amount.");
         }
 
@@ -265,23 +263,23 @@ public class VaultEconomy implements Economy {
         BigDecimal balance = economy.getBalance(uuid);
 
         if (balance.compareTo(amountValue) < 0) {
-            return new EconomyResponse(amountValue, balance, EconomyResponse.ResponseType.FAILURE, "Insufficient funds.");
+            return new EconomyResponse(amount, balance.doubleValue(), EconomyResponse.ResponseType.FAILURE, "Insufficient funds.");
         }
 
         economy.removeBalance(uuid, amountValue);
-        return new EconomyResponse(amountValue, economy.getBalance(uuid), EconomyResponse.ResponseType.SUCCESS, "");
+        return new EconomyResponse(amount, economy.getBalance(uuid).doubleValue(), EconomyResponse.ResponseType.SUCCESS, "");
     }
 
     private EconomyResponse deposit(UUID uuid, double amount) {
         if (isInvalidAmount(amount)) {
-            return new EconomyResponse(BigDecimal.ZERO, economy.getBalance(uuid),
+            return new EconomyResponse(0.0, economy.getBalance(uuid).doubleValue(),
                     EconomyResponse.ResponseType.FAILURE, "Invalid amount.");
         }
 
         ensureAccount(uuid);
         BigDecimal amountValue = BigDecimal.valueOf(amount);
         economy.addBalance(uuid, amountValue);
-        return new EconomyResponse(amountValue, economy.getBalance(uuid), EconomyResponse.ResponseType.SUCCESS, "");
+        return new EconomyResponse(amount, economy.getBalance(uuid).doubleValue(), EconomyResponse.ResponseType.SUCCESS, "");
     }
 
     private boolean isInvalidAmount(double amount) {
@@ -295,7 +293,7 @@ public class VaultEconomy implements Economy {
     }
 
     private EconomyResponse notImplemented(String message) {
-        return new EconomyResponse(BigDecimal.ZERO, BigDecimal.ZERO,
+        return new EconomyResponse(0.0, 0.0,
                 EconomyResponse.ResponseType.NOT_IMPLEMENTED, message);
     }
 
@@ -316,23 +314,5 @@ public class VaultEconomy implements Economy {
         }
     }
 
-    private String resolveCurrencyName() {
-        String symbol = config.getCurrencySymbol();
-        if (symbol != null) {
-            String trimmed = symbol.trim();
-            if (!trimmed.isEmpty() && trimmed.chars().allMatch(Character::isLetter)) {
-                return trimmed;
-            }
-        }
-
-        return DEFAULT_CURRENCY_NAME;
-    }
-
-    private String pluralize(String name) {
-        if (name.endsWith("s")) {
-            return name;
-        }
-
-        return name + "s";
-    }
+    
 }
