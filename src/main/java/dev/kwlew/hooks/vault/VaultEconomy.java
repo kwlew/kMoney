@@ -305,12 +305,7 @@ public class VaultEconomy implements Economy {
         try {
             return UUID.fromString(accountId);
         } catch (IllegalArgumentException ignored) {
-            OfflinePlayer player = Bukkit.getOfflinePlayer(accountId);
-            if (player != null) {
-                return player.getUniqueId();
-            }
-
-            return UUID.nameUUIDFromBytes(accountId.getBytes(StandardCharsets.UTF_8));
+            return Bukkit.getOfflinePlayer(accountId).getUniqueId();
         }
     }
 
