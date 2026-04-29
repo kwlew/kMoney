@@ -314,5 +314,4 @@ public class VaultEconomy implements Economy {
         }
     }
 
-    
 }
