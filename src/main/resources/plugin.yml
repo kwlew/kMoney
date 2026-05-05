@@ -2,7 +2,7 @@ name: kMoney
 description: $description
 version: '${version}'
 
-main: dev.kwlew.kMoney
+main: dev.kwlew.kmoney.kMoney
 api-version: '1.21'
 
 author: KWLEW
