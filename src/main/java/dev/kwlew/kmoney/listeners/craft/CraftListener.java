@@ -1,24 +1,20 @@
-package dev.kwlew.kmoney.listeners;
+package dev.kwlew.kmoney.listeners.craft;
 
 import dev.kwlew.kmoney.kernel.Inject;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import dev.kwlew.kmoney.listeners.ListenerComponent;
+import dev.kwlew.kmoney.managers.utils.MoneyCheckUtil;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class CraftListener implements ListenerComponent {
 
-    private final NamespacedKey key;
     private final JavaPlugin plugin;
 
     @Inject
     public CraftListener(JavaPlugin plugin) {
-        this.key = new NamespacedKey(plugin, "money");
         this.plugin = plugin;
     }
 
@@ -30,7 +26,7 @@ public class CraftListener implements ListenerComponent {
     @EventHandler
     public void onCraft(CraftItemEvent event) {
         for (ItemStack item : event.getInventory().getMatrix()) {
-            if (isMoneyCheck(item)) {
+            if (MoneyCheckUtil.isMoneyCheck(item)) {
                 event.setCancelled(true);
                 return;
             }
@@ -40,29 +36,11 @@ public class CraftListener implements ListenerComponent {
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
         for (ItemStack item : event.getInventory().getMatrix()) {
-            if (isMoneyCheck(item)) {
+            if (MoneyCheckUtil.isMoneyCheck(item)) {
                 event.getInventory().setResult(null);
                 return;
             }
         }
     }
 
-    private boolean isMoneyCheck(ItemStack item) {
-        if (item == null || item.getType() != Material.PAPER) {
-            return false;
-        }
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return false;
-        }
-
-        String encoded = meta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
-        if (encoded != null) {
-            return true;
-        }
-
-        Double legacy = meta.getPersistentDataContainer().get(key, PersistentDataType.DOUBLE);
-        return legacy != null;
-    }
 }

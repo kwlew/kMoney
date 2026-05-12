@@ -1,19 +1,22 @@
 package dev.kwlew.kmoney.kernel;
 
+import dev.kwlew.kmoney.commands.MoneyCommand;
 import dev.kwlew.kmoney.economy.EconomyManager;
 import dev.kwlew.kmoney.economy.api.EconomyService;
 import dev.kwlew.kmoney.economy.storage.EcoPersistence;
 import dev.kwlew.kmoney.economy.storage.EconomyStorage;
-import dev.kwlew.kmoney.commands.MoneyCommand;
 import dev.kwlew.kmoney.hooks.bstats.bStats;
 import dev.kwlew.kmoney.hooks.papi.PlaceholderAPIHook;
 import dev.kwlew.kmoney.hooks.vault.VaultHook;
 import dev.kwlew.kmoney.listeners.CheckClaimListener;
-import dev.kwlew.kmoney.listeners.CraftListener;
 import dev.kwlew.kmoney.listeners.JoinListener;
 import dev.kwlew.kmoney.listeners.QuitListener;
+import dev.kwlew.kmoney.listeners.craft.CraftListener;
+import dev.kwlew.kmoney.listeners.craft.HopperListener;
+import dev.kwlew.kmoney.listeners.craft.InventoryClickListener;
 import dev.kwlew.kmoney.managers.MessageManager;
 import dev.kwlew.kmoney.managers.config.ConfigManager;
+import dev.kwlew.kmoney.managers.utils.MoneyCheckUtil;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -34,6 +37,8 @@ public class Bootstrap {
         initCommands();
 
         initHooks();
+
+        initUtils();
 
         initListeners();
     }
@@ -58,12 +63,18 @@ public class Bootstrap {
         registry.resolve(QuitListener.class);
         registry.resolve(CheckClaimListener.class);
         registry.resolve(CraftListener.class);
+        registry.resolve(HopperListener.class);
+        registry.resolve(InventoryClickListener.class);
     }
 
     private void initEconomy() {
         registry.bind(EconomyStorage.class, EcoPersistence.class);
 
         registry.bind(EconomyService.class, EconomyManager.class);
+    }
+
+    private void initUtils() {
+        registry.resolve(MoneyCheckUtil.class);
     }
 
     private void initCommands() {
