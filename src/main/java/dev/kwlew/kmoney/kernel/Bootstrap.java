@@ -8,15 +8,18 @@ import dev.kwlew.kmoney.economy.storage.EconomyStorage;
 import dev.kwlew.kmoney.hooks.bstats.bStats;
 import dev.kwlew.kmoney.hooks.papi.PlaceholderAPIHook;
 import dev.kwlew.kmoney.hooks.vault.VaultHook;
-import dev.kwlew.kmoney.listeners.CheckClaimListener;
-import dev.kwlew.kmoney.listeners.JoinListener;
-import dev.kwlew.kmoney.listeners.QuitListener;
+import dev.kwlew.kmoney.listeners.player.CheckClaimListener;
+import dev.kwlew.kmoney.listeners.player.JoinListener;
+import dev.kwlew.kmoney.listeners.player.QuitListener;
 import dev.kwlew.kmoney.listeners.craft.CraftListener;
-import dev.kwlew.kmoney.listeners.craft.HopperListener;
-import dev.kwlew.kmoney.listeners.craft.InventoryClickListener;
-import dev.kwlew.kmoney.managers.MessageManager;
+import dev.kwlew.kmoney.listeners.entities.PiglinBarterListener;
+import dev.kwlew.kmoney.listeners.entities.VillagerTradeListener;
+import dev.kwlew.kmoney.listeners.gui.HopperListener;
+import dev.kwlew.kmoney.listeners.gui.InventoryClickListener;
+import dev.kwlew.kmoney.managers.check.CheckHandler;
+import dev.kwlew.kmoney.managers.check.CheckSettings;
 import dev.kwlew.kmoney.managers.config.ConfigManager;
-import dev.kwlew.kmoney.managers.utils.MoneyCheckUtil;
+import dev.kwlew.kmoney.managers.utils.MessageManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -30,17 +33,7 @@ public class Bootstrap {
         registry.register(JavaPlugin.class, plugin);
         registry.register(Registry.class, registry);
 
-        initManagers();
-
-        initEconomy();
-
-        initCommands();
-
-        initHooks();
-
-        initUtils();
-
-        initListeners();
+        initMain();
     }
 
     public void init() {
@@ -59,12 +52,24 @@ public class Bootstrap {
     }
 
     private void initListeners() {
+        playerListeners();
+
+        preventionListeners();
+    }
+
+    private void playerListeners() {
         registry.resolve(JoinListener.class);
         registry.resolve(QuitListener.class);
+
         registry.resolve(CheckClaimListener.class);
+    }
+
+    private void preventionListeners() {
         registry.resolve(CraftListener.class);
         registry.resolve(HopperListener.class);
         registry.resolve(InventoryClickListener.class);
+        registry.resolve(VillagerTradeListener.class);
+        registry.resolve(PiglinBarterListener.class);
     }
 
     private void initEconomy() {
@@ -74,7 +79,7 @@ public class Bootstrap {
     }
 
     private void initUtils() {
-        registry.resolve(MoneyCheckUtil.class);
+        registry.resolve(CheckHandler.class);
     }
 
     private void initCommands() {
@@ -85,6 +90,20 @@ public class Bootstrap {
         registry.resolve(PlaceholderAPIHook.class);
         registry.resolve(VaultHook.class);
         registry.resolve(bStats.class);
+    }
+
+    private void initChecks() {
+        registry.resolve(CheckSettings.class);
+    }
+
+    private void initMain() {
+        initManagers();
+        initEconomy();
+        initCommands();
+        initHooks();
+        initUtils();
+        initListeners();
+        initChecks();
     }
 
     private void lifecycle(Consumer<LifecycleComponent> action) {

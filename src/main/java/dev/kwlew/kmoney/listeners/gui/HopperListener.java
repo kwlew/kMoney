@@ -1,9 +1,9 @@
-package dev.kwlew.kmoney.listeners.craft;
+package dev.kwlew.kmoney.listeners.gui;
 
 import dev.kwlew.kmoney.kernel.Inject;
 import dev.kwlew.kmoney.kernel.LifecycleComponent;
 import dev.kwlew.kmoney.listeners.ListenerComponent;
-import dev.kwlew.kmoney.managers.utils.MoneyCheckUtil;
+import dev.kwlew.kmoney.managers.check.CheckHandler;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -29,7 +29,7 @@ public class HopperListener implements ListenerComponent, LifecycleComponent {
         InventoryType type = event.getDestination().getType();
         ItemStack item = event.getItem();
 
-        if (type == InventoryType.CRAFTER && MoneyCheckUtil.isMoneyCheck(item)) {
+        if (CheckHandler.isMoneyCheck(item) && CheckHandler.isBlacklistedInventory(type)) {
             event.setCancelled(true);
         }
     }

@@ -7,16 +7,17 @@ import dev.kwlew.kmoney.economy.api.EconomyService;
 import dev.kwlew.kmoney.economy.utils.Formatter;
 import dev.kwlew.kmoney.economy.utils.MoneyValidator;
 import dev.kwlew.kmoney.kernel.Inject;
-import dev.kwlew.kmoney.managers.MessageManager;
+import dev.kwlew.kmoney.managers.check.Check;
+import dev.kwlew.kmoney.managers.check.CheckSettings;
 import dev.kwlew.kmoney.managers.config.ConfigManager;
-import io.papermc.paper.command.brigadier.Commands;
+import dev.kwlew.kmoney.managers.utils.MessageManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
@@ -40,6 +41,7 @@ import java.util.List;
  * - /money remove &lt;player&gt; &lt;amount&gt; - Admin: Remove money from a player (requires permission)
  * - /money set &lt;player&gt; &lt;amount&gt; - Admin: Set a player's balance (requires permission)
  * - /money withdraw &lt;amount&gt; [notes] - Create physical money checks
+ * - /money admin &lt;on|off&gt; - Enable or disable your admin join message
  * - /money reload - Admin: Reload plugin configuration (requires permission)
  * <p>
  * All monetary amounts support suffixes: k (thousand), m (million), b (billion), t (trillion), etc.
@@ -52,8 +54,9 @@ public final class MoneyCommand extends BaseCommand {
     public MoneyCommand(JavaPlugin plugin,
                         EconomyService economy,
                         MessageManager messages,
-                        ConfigManager config) {
-        super(plugin, economy, messages, config);
+                        ConfigManager config,
+                        CheckSettings checkSettings) {
+        super(plugin, economy, messages, config, checkSettings);
         this.key = new NamespacedKey(plugin, "money");
     }
 
@@ -74,6 +77,32 @@ public final class MoneyCommand extends BaseCommand {
                     sendSelfBalance(ctx.getSource());
                     return Command.SINGLE_SUCCESS;
                 })
+                .then(Commands.literal("admin")
+                        .requires(source -> hasPermission(source, "kmoney.command.money.admin"))
+                        .executes(ctx -> {
+                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.admin")) {
+                                return 0;
+                            }
+
+                            messages.send(ctx.getSource().getSender(), "usage.admin");
+                            return 0;
+                        })
+                        .then(Commands.literal("on")
+                                .executes(ctx -> {
+                                    if (!requirePermission(ctx.getSource(), "kmoney.command.money.admin")) {
+                                        return 0;
+                                    }
+
+                                    return handleAdminToggle(ctx.getSource(), true);
+                                }))
+                        .then(Commands.literal("off")
+                                .executes(ctx -> {
+                                    if (!requirePermission(ctx.getSource(), "kmoney.command.money.admin")) {
+                                        return 0;
+                                    }
+
+                                    return handleAdminToggle(ctx.getSource(), false);
+                                })))
                 .then(Commands.literal("balance")
                         .executes(ctx -> {
                             if (!requirePermission(ctx.getSource(), "kmoney.command.money")) {
@@ -104,6 +133,7 @@ public final class MoneyCommand extends BaseCommand {
 
                             config.reloadAll();
                             messages.reload();
+                            checkSettings.reload();
                             messages.send(ctx.getSource().getSender(), "money.reloaded");
                             return Command.SINGLE_SUCCESS;
                         }))
@@ -308,8 +338,8 @@ public final class MoneyCommand extends BaseCommand {
             return false;
         }
 
-        ItemStack paper = new ItemStack(Material.PAPER, notesAmount);
-        ItemMeta meta = paper.getItemMeta();
+        ItemStack check = new ItemStack(Check.getMaterial(), notesAmount);
+        ItemMeta meta = check.getItemMeta();
 
         String symbol = config.getCurrencySymbol();
         BigDecimal total = amount.multiply(BigDecimal.valueOf(notesAmount));
@@ -330,10 +360,10 @@ public final class MoneyCommand extends BaseCommand {
 
         meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, amount.toPlainString());
 
-        paper.setItemMeta(meta);
+        check.setItemMeta(meta);
 
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
-        player.getInventory().addItem(paper);
+        player.getInventory().addItem(check);
         economy.removeBalance(player.getUniqueId(), total);
 
         messages.send(source.getSender(), "check.success", messages.placeholder("amount", formatted));
@@ -468,6 +498,19 @@ public final class MoneyCommand extends BaseCommand {
                 messages.placeholder("amount", formattedAmount)
         );
 
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int handleAdminToggle(CommandSourceStack source, boolean enabled) {
+        Player player = getPlayer(source);
+        if (player == null) {
+            messages.send(source.getSender(), "money.player-only");
+            return 0;
+        }
+
+        economy.createAccount(player.getUniqueId());
+        economy.setAdminMessage(player.getUniqueId(), enabled);
+        messages.send(player, enabled ? "money.admin-enabled" : "money.admin-disabled");
         return Command.SINGLE_SUCCESS;
     }
 

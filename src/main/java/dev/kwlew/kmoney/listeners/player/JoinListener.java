@@ -1,7 +1,8 @@
-package dev.kwlew.kmoney.listeners;
+package dev.kwlew.kmoney.listeners.player;
 
 import dev.kwlew.kmoney.economy.EconomyManager;
 import dev.kwlew.kmoney.kernel.Inject;
+import dev.kwlew.kmoney.listeners.ListenerComponent;
 import dev.kwlew.kmoney.managers.config.BuildInfo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;

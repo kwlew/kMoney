@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,26 +48,25 @@ public class EcoPersistence implements EconomyStorage {
     public BigDecimal getBalance(UUID uuid) {
         synchronized (getLock(uuid)) {
             FileConfiguration config = getCachedConfig(uuid);
-            Object raw = config.get("balance");
-            switch (raw) {
-                case null -> {
-                    return BigDecimal.ZERO;
-                }
-                case Number number -> {
-                    return BigDecimal.valueOf(number.doubleValue());
-                }
-                case String value -> {
-                    try {
-                        return new BigDecimal(value);
-                    } catch (NumberFormatException ignored) {
-                        return BigDecimal.ZERO;
-                    }
-                }
-                default -> {
-                }
+            return readBalance(config);
+        }
+    }
+
+    @Override
+    public Optional<BigDecimal> getExistingBalance(UUID uuid) {
+        synchronized (getLock(uuid)) {
+            FileConfiguration cached = cache.get(uuid);
+            if (cached != null) {
+                return Optional.of(readBalance(cached));
             }
 
-            return BigDecimal.ZERO;
+            File file = getFile(uuid);
+            if (!file.exists()) {
+                return Optional.empty();
+            }
+
+            FileConfiguration config = getCachedConfig(uuid);
+            return Optional.of(readBalance(config));
         }
     }
 
@@ -135,6 +135,22 @@ public class EcoPersistence implements EconomyStorage {
                 }
             }
         }
+    }
+
+    private BigDecimal readBalance(FileConfiguration config) {
+        Object raw = config.get("balance");
+        return switch (raw) {
+            case null -> BigDecimal.ZERO;
+            case Number number -> BigDecimal.valueOf(number.doubleValue());
+            case String value -> {
+                try {
+                    yield new BigDecimal(value);
+                } catch (NumberFormatException ignored) {
+                    yield BigDecimal.ZERO;
+                }
+            }
+            default -> BigDecimal.ZERO;
+        };
     }
 
 }

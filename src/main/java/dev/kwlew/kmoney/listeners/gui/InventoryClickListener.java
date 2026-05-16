@@ -1,10 +1,9 @@
-package dev.kwlew.kmoney.listeners.craft;
+package dev.kwlew.kmoney.listeners.gui;
 
 import dev.kwlew.kmoney.kernel.Inject;
 import dev.kwlew.kmoney.kernel.LifecycleComponent;
 import dev.kwlew.kmoney.listeners.ListenerComponent;
-import dev.kwlew.kmoney.managers.utils.MoneyCheckUtil;
-import org.bukkit.Material;
+import dev.kwlew.kmoney.managers.check.CheckHandler;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -30,13 +29,13 @@ public class InventoryClickListener implements LifecycleComponent, ListenerCompo
     public void onInventoryClick(InventoryClickEvent event) {
         InventoryType inventoryType = event.getInventory().getType();
 
-        if (inventoryType != InventoryType.CRAFTER) return;
+        if (!CheckHandler.isBlacklistedInventory(inventoryType)) return;
 
         ItemStack item = event.getCurrentItem();
 
         if (item == null) return;
 
-        if (item.getType() == Material.PAPER && MoneyCheckUtil.isMoneyCheck(item)) {
+        if (CheckHandler.isMoneyCheck(item)) {
             event.setCancelled(true);
             return;
         }
@@ -45,7 +44,7 @@ public class InventoryClickListener implements LifecycleComponent, ListenerCompo
             int hotBarSlot = event.getHotbarButton();
             ItemStack hotbarItem = event.getWhoClicked().getInventory().getItem(hotBarSlot);
 
-            if (MoneyCheckUtil.isMoneyCheck(hotbarItem)) {
+            if (CheckHandler.isMoneyCheck(hotbarItem)) {
                 event.setCancelled(true);
             }
         }

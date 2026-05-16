@@ -1,4 +1,4 @@
-package dev.kwlew.kmoney.managers;
+package dev.kwlew.kmoney.managers.utils;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -14,37 +14,37 @@ import java.io.File;
 
 /**
  * Manages all player-facing messages and notifications for the kMoney plugin.
- * 
+ * <p>
  * This manager provides:
  * - MiniMessage text formatting (colors, decorations, styles)
  * - Automatic prefix prepending to messages
  * - Placeholder/tag substitution for dynamic values
  * - Convenient methods for sending messages to players
- * 
+ * <p>
  * ARCHITECTURE:
  * - Uses Adventure API's MiniMessage for rich text formatting
  * - Loads messages from messages.yml configuration file
  * - Caches the global prefix for efficiency
  * - Supports both prefixed and raw message retrieval
- * 
+ * <p>
  * MESSAGE METHODS:
  * - get(path) / get(path, resolvers) - Returns formatted Component with prefix
  * - getRaw(path) / getRaw(path, resolvers) - Returns Component without prefix
  * - send(...) - Sends message to player or CommandSender
  * - sendActionBar(...) - Sends message to player's action bar
  * - broadcast(...) - Broadcasts message to all players
- * 
+ * <p>
  * FORMATTING:
  * MiniMessage uses tags for formatting:
  * - Colors: <red>, <green>, <blue>, <yellow>, <aqua>, etc.
  * - Hex colors: <#FF0000>
  * - Decorations: <bold>, <italic>, <underlined>, <strikethrough>
  * - Closing: </> or </tag>
- * 
+ * <p>
  * PLACEHOLDER SYSTEM:
  * Messages use tags for dynamic values: <player>, <amount>, <balance>
  * Supply values using: messages.placeholder("player", "Steve")
- * 
+ * <p>
  * Example usage:
  * {@code
  * messages.send(player, "money.balance-self",
@@ -278,7 +278,7 @@ public class MessageManager {
     /**
      * Creates a placeholder tag resolver for dynamic message substitution.
      * Use with send() methods to replace tags in messages.
-     * 
+     * <p>
      * Example:
      * {@code
      * messages.send(player, "money.pay-sent",

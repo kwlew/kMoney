@@ -15,8 +15,9 @@ soft-depend:
 commands:
   money:
     description: View balances, transfer money, and manage checks.
-    usage: /money [balance|pay|add|remove|set|withdraw|reload]
+    usage: /money [balance|pay|add|remove|set|withdraw|admin|reload]
     permission: kmoney.command.money
+    aliases: balance
 
 permissions:
   kmoney.command.money:
@@ -24,6 +25,9 @@ permissions:
     default: true
   kmoney.command.money.reload:
     description: Allows reloading plugin configuration.
+    default: op
+  kmoney.command.money.admin:
+    description: Allows /money admin command.
     default: op
   kmoney.command.money.add:
     description: Allows adding money to a player.
@@ -46,6 +50,7 @@ permissions:
     children:
       kmoney.command.money: true
       kmoney.command.money.reload: true
+      kmoney.command.money.admin: true
       kmoney.command.money.add: true
       kmoney.command.money.remove: true
       kmoney.command.money.set: true

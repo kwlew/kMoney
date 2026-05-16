@@ -2,7 +2,7 @@ package dev.kwlew.kmoney.listeners.craft;
 
 import dev.kwlew.kmoney.kernel.Inject;
 import dev.kwlew.kmoney.listeners.ListenerComponent;
-import dev.kwlew.kmoney.managers.utils.MoneyCheckUtil;
+import dev.kwlew.kmoney.managers.check.CheckHandler;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
@@ -26,7 +26,7 @@ public class CraftListener implements ListenerComponent {
     @EventHandler
     public void onCraft(CraftItemEvent event) {
         for (ItemStack item : event.getInventory().getMatrix()) {
-            if (MoneyCheckUtil.isMoneyCheck(item)) {
+            if (CheckHandler.isMoneyCheck(item)) {
                 event.setCancelled(true);
                 return;
             }
@@ -36,7 +36,7 @@ public class CraftListener implements ListenerComponent {
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
         for (ItemStack item : event.getInventory().getMatrix()) {
-            if (MoneyCheckUtil.isMoneyCheck(item)) {
+            if (CheckHandler.isMoneyCheck(item)) {
                 event.getInventory().setResult(null);
                 return;
             }

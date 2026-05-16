@@ -1,8 +1,8 @@
-package dev.kwlew.kmoney.listeners;
+package dev.kwlew.kmoney.listeners.player;
 
 import dev.kwlew.kmoney.economy.EconomyManager;
 import dev.kwlew.kmoney.kernel.Inject;
-import org.bukkit.entity.Player;
+import dev.kwlew.kmoney.listeners.ListenerComponent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,9 +27,7 @@ public class QuitListener implements ListenerComponent {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-
-        economy.setBalance(uuid, economy.getBalance(uuid));
+        UUID uuid = event.getPlayer().getUniqueId();
+        economy.flushAccount(uuid);
     }
 }
