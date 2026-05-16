@@ -1,11 +1,12 @@
-package dev.kwlew.kmoney.listeners;
+package dev.kwlew.kmoney.listeners.player;
 
 import dev.kwlew.kmoney.economy.EconomyManager;
 import dev.kwlew.kmoney.economy.utils.Formatter;
 import dev.kwlew.kmoney.kernel.Inject;
-import dev.kwlew.kmoney.managers.MessageManager;
+import dev.kwlew.kmoney.listeners.ListenerComponent;
+import dev.kwlew.kmoney.managers.utils.MessageManager;
 import dev.kwlew.kmoney.managers.config.ConfigManager;
-import org.bukkit.Material;
+import dev.kwlew.kmoney.managers.check.Check;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -50,7 +51,7 @@ public class CheckClaimListener implements ListenerComponent {
         }
 
         ItemStack item = event.getItem();
-        if (item.getType() != Material.PAPER) return;
+        if (item.getType() != Check.getMaterial()) return;
 
         if (item.getItemMeta() == null) return;
         ItemMeta meta = item.getItemMeta();

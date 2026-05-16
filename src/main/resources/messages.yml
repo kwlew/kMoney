@@ -78,6 +78,12 @@
 #
 # ============================================
 
+# ============================================
+# PREFIX
+# ============================================
+# Prefix for the messages of the plugin.
+# Leave empty for no prefix.
+# Examples: "", "<red>[MyServer] "
 prefix: "<dark_gray>[<aqua>kMoney<dark_gray>] "
 
 # ============================================
@@ -113,6 +119,12 @@ money:
   
   # Shown when configuration and messages are reloaded
   reloaded: "<gray>Configuration reloaded."
+
+  # Shown when a player enables admin join messages
+  admin-enabled: "<gray>Admin join message is now <green>enabled<gray>."
+
+  # Shown when a player disables admin join messages
+  admin-disabled: "<gray>Admin join message is now <red>disabled<gray>."
   
   # Shown when a monetary amount format is invalid
   # Placeholder: <amount> = the invalid input
@@ -168,7 +180,7 @@ money:
 #
 check:
   # Display name of the money check item in player inventory
-  create-name: "<green>Money Check"
+  create-name: "<green>Check"
   
   # Shown on check item as creator information (lore line)
   # Placeholder: <player> = creator player name
@@ -200,3 +212,4 @@ usage:
   set: "<red>Usage: /money set <player> <amount>"
   remove: "<red>Usage: /money remove <player> <amount>"
   withdraw: "<red>Usage: /money withdraw <amount> [notes]"
+  admin: "<red>Usage: /money admin <on|off>"

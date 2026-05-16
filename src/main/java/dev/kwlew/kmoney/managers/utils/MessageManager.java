@@ -1,4 +1,4 @@
-package dev.kwlew.kmoney.managers;
+package dev.kwlew.kmoney.managers.utils;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -278,7 +278,7 @@ public class MessageManager {
     /**
      * Creates a placeholder tag resolver for dynamic message substitution.
      * Use with send() methods to replace tags in messages.
-     * 
+     * <p>
      * Example:
      * {@code
      * messages.send(player, "money.pay-sent",

@@ -1,11 +1,13 @@
 package dev.kwlew.kmoney.managers.config;
 
-import org.bukkit.Material;
+import dev.kwlew.kmoney.economy.utils.MoneyParser;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.math.BigDecimal;
 
 public class ConfigManager {
+    private static final BigDecimal DEFAULT_BALANCE = new BigDecimal("100.0");
+
     private final ConfigFile config;
     private final ConfigFile messages;
 
@@ -32,18 +34,6 @@ public class ConfigManager {
         messages.save();
     }
 
-    public Material getCheckMaterial() {
-        String materialName = config.get().getString("CheckMaterial", "PAPER");
-
-        Material material = Material.matchMaterial(materialName);
-
-        if (material == null) {
-            return Material.PAPER;
-        }
-
-        return material;
-    }
-
     public String getCurrencySymbol() {
         return config.get().getString("symbol", "$");
     }
@@ -56,12 +46,12 @@ public class ConfigManager {
 
         if (raw instanceof String value) {
             try {
-                return new BigDecimal(value);
+                return MoneyParser.parse(value);
             } catch (NumberFormatException ignored) {
-                return new BigDecimal("100.0");
+                return DEFAULT_BALANCE;
             }
         }
 
-        return new BigDecimal("100.0");
+        return DEFAULT_BALANCE;
     }
 }

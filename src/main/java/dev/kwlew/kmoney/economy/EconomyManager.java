@@ -16,14 +16,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages player economy accounts with in-memory caching and persistent storage.
- * 
+ * <p>
  * This implementation provides:
  * - In-memory balance cache for fast access
  * - Automatic dirty tracking for efficient persistence
  * - Asynchronous autosave every 30 seconds
  * - Thread-safe balance operations
  * - Prevents negative balances
- * 
+ * <p>
  * The economy manager uses a write-back cache pattern where changes are cached in memory
  * and periodically persisted to storage in the background.
  */
@@ -55,7 +55,18 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
 
     @Override
     public BigDecimal getBalance(UUID uuid) {
-        return cache.computeIfAbsent(uuid, storage::getBalance);
+        BigDecimal cached = cache.get(uuid);
+        if (cached != null) {
+            return cached;
+        }
+
+        BigDecimal loaded = storage.getExistingBalance(uuid).orElse(null);
+        if (loaded == null) {
+            return BigDecimal.ZERO;
+        }
+
+        cache.put(uuid, loaded);
+        return loaded;
     }
 
     @Override
@@ -86,7 +97,7 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
 
     @Override
     public boolean hasAccount(UUID uuid) {
-        return cache.containsKey(uuid) || storage.hasAccount(uuid);
+        return dirty.contains(uuid) || storage.hasAccount(uuid);
     }
 
     @Override
@@ -106,11 +117,7 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
      */
     private synchronized void saveDirty() {
         for (UUID uuid : new HashSet<>(dirty)) {
-            BigDecimal balance = cache.get(uuid);
-            if (balance == null) continue;
-
-            storage.setBalance(uuid, balance);
-            dirty.remove(uuid);
+            flushAccount(uuid);
         }
     }
 
@@ -145,5 +152,20 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
         }
 
         dirty.clear();
+    }
+
+    public synchronized void flushAccount(UUID uuid) {
+        if (!dirty.contains(uuid)) {
+            return;
+        }
+
+        BigDecimal balance = cache.get(uuid);
+        if (balance == null) {
+            dirty.remove(uuid);
+            return;
+        }
+
+        storage.setBalance(uuid, balance);
+        dirty.remove(uuid);
     }
 }

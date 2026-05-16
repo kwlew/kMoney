@@ -10,10 +10,20 @@
 # Example outputs: $100, €1.5K, £2.3M
 symbol: "$"
 
+# Admin options:
+enable-join-message: true
+update-warning: true
+
+# Check Material
+# This config is for the item used to represent the check.
+# Common items: EMERALD, PAPER, DIAMOND, GOLD_INGOT
+# Format: Always CAPS-LOCK
+check-material: PAPER
+
 # Starting Balance
 # The initial balance given to players when their account is first created.
 # This is only set once per player when they first join the server.
 # Existing player accounts are not affected by changes to this value.
 # Use standard number format (e.g., "100.0", "1000", "500.50")
 # Supports large numbers: "1k" = 1000, "1m" = 1000000, "1b" = 1000000000
-default-balance: "100.0"
+default-balance: "100"
