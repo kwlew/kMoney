@@ -1,5 +1,6 @@
 package dev.kwlew.kmoney.managers.config;
 
+import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.math.BigDecimal;
@@ -29,6 +30,18 @@ public class ConfigManager {
     public void saveAll() {
         config.save();
         messages.save();
+    }
+
+    public Material getCheckMaterial() {
+        String materialName = config.get().getString("CheckMaterial", "PAPER");
+
+        Material material = Material.matchMaterial(materialName);
+
+        if (material == null) {
+            return Material.PAPER;
+        }
+
+        return material;
     }
 
     public String getCurrencySymbol() {
