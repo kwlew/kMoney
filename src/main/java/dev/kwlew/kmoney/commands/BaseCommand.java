@@ -36,6 +36,7 @@ public abstract class BaseCommand implements LifecycleComponent {
      * @param economy the economy service
      * @param messages the message manager for localized messages
      * @param config the configuration manager
+     * @param checkSettings check settings manager.
      */
     @Inject
     protected BaseCommand(JavaPlugin plugin, EconomyService economy, MessageManager messages, ConfigManager config, CheckSettings checkSettings) {

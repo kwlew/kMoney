@@ -4,8 +4,8 @@ import org.bukkit.Material;
 
 public final class Check {
 
-    private static final Material default_material = Material.PAPER;
-    private static Material material = default_material;
+    private static final Material DEFAULT_MATERIAL = Material.PAPER;
+    private static Material material = DEFAULT_MATERIAL;
 
     private Check() {}
 

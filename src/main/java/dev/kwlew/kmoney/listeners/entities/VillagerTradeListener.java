@@ -27,10 +27,14 @@ public class VillagerTradeListener implements ListenerComponent, Listener {
     @EventHandler
     public void onVillagerTrade(PlayerPurchaseEvent event) {
 
-        MerchantInventory inv = (MerchantInventory)
-                event.getPlayer()
-                        .getOpenInventory()
-                        .getTopInventory();
+
+        var topInventory = event.getPlayer()
+                .getOpenInventory()
+                .getTopInventory();
+
+        if (!(topInventory instanceof MerchantInventory inv)) {
+            return;
+        }
 
         ItemStack first = inv.getItem(0);
         ItemStack second = inv.getItem(1);

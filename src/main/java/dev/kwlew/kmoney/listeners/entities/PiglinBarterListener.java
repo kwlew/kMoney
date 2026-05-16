@@ -1,5 +1,6 @@
 package dev.kwlew.kmoney.listeners.entities;
 
+import dev.kwlew.kmoney.kernel.Inject;
 import dev.kwlew.kmoney.listeners.ListenerComponent;
 import dev.kwlew.kmoney.managers.check.CheckHandler;
 import org.bukkit.event.EventHandler;
@@ -12,12 +13,13 @@ public class PiglinBarterListener implements ListenerComponent, Listener {
 
     private final JavaPlugin plugin;
 
+    @Inject
     public PiglinBarterListener(JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public void init() {
+    public void start() {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
