@@ -35,7 +35,4 @@ public final class kMoney extends JavaPlugin {
                 + time + "ms\u001B[90m)\u001B[0m");
     }
 
-    public Bootstrap bootstrap() {
-        return bootstrap;
-    }
 }

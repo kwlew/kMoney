@@ -1,12 +1,19 @@
+[![Modrinth Version](https://img.shields.io/modrinth/v/kmoney?style=for-the-badge&color=purple)](https://modrinth.com/plugin/kmoney)
+[![Downloads](https://img.shields.io/modrinth/dt/kmoney?style=for-the-badge&color=white)](https://modrinth.com/plugin/kmoney)
+![Build](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge)
+
+![Players](https://img.shields.io/bstats/players/31019?style=for-the-badge&color=pink)
+![Servers](https://img.shields.io/bstats/servers/31019?style=for-the-badge&color=cyan)
 # kMoney
 
-`kMoney` is a Paper plugin that provides a full `/money` economy command with:
+### `kMoney` is a Minecraft plugin that provides an **economy**.
 
 - BigDecimal-based balances (precision-safe money math)
 - Player-to-player payments
 - Admin add/remove/set tools
 - Withdrawable paper checks that players can redeem
-- PlaceholderAPI support
+- **PlaceholderAPI** support
+- **Vault** support
 
 ## Features
 
@@ -18,7 +25,7 @@
 
 ## Requirements
 
-- Paper API: `26.1.2`
+- Supported Versions: 26.1, 26.1.x, 1.21.4-1.21.11
 - Java toolchain: `25`
 - Optional plugins:
   - PlaceholderAPI
@@ -26,7 +33,7 @@
 
 ## Installation
 
-1. Donwload the plugin and place it in your /plugins folder
+1. Download the plugin and place it in your /plugins folder
 
 ## Commands
 
@@ -35,7 +42,7 @@
 | `/money` | Show your balance | `kmoney.command.money` |
 | `/money balance [player]` | Show balance (self/other) | `kmoney.command.money` |
 | `/money pay <player> <amount>` | Send money to a player | `kmoney.command.money.pay` |
-| `/money withdraw <amount> [notes]` | Create check item(s) | `kmoney.command.money.withdraw` |
+| `/money withdraw <amount\|all> [notes]` | Create check item(s) (`all` withdraws full balance into one note) | `kmoney.command.money.withdraw` |
 | `/money admin <on\|off>` | Toggle your admin join message | `kmoney.command.money.admin` |
 | `/money add <player> <amount>` | Add money to a player | `kmoney.command.money.add` |
 | `/money remove <player> <amount>` | Remove money from a player | `kmoney.command.money.remove` |
@@ -68,6 +75,8 @@ Examples:
 
 - `symbol` - currency symbol (default: `$`)
 - `default-balance` - starting balance for new accounts
+- `enable-join-message` - The message admins get when joining the server.
+- `update-warning` - Warns about missing updates.
 
 `src/main/resources/messages.yml`
 
