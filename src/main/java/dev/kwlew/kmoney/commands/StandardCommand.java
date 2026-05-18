@@ -21,7 +21,7 @@ import java.math.BigDecimal;
  * <p>
  * Subclasses should implement {@link LifecycleComponent} to integrate with the plugin lifecycle.
  */
-public abstract class BaseCommand implements LifecycleComponent {
+public abstract class StandardCommand implements LifecycleComponent {
 
     protected final JavaPlugin plugin;
     protected final EconomyService economy;
@@ -39,7 +39,7 @@ public abstract class BaseCommand implements LifecycleComponent {
      * @param checkSettings check settings manager.
      */
     @Inject
-    protected BaseCommand(JavaPlugin plugin, EconomyService economy, MessageManager messages, ConfigManager config, CheckSettings checkSettings) {
+    protected StandardCommand(JavaPlugin plugin, EconomyService economy, MessageManager messages, ConfigManager config, CheckSettings checkSettings) {
         this.plugin = plugin;
         this.economy = economy;
         this.messages = messages;

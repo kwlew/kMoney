@@ -35,7 +35,7 @@
 | `/money` | Show your balance | `kmoney.command.money` |
 | `/money balance [player]` | Show balance (self/other) | `kmoney.command.money` |
 | `/money pay <player> <amount>` | Send money to a player | `kmoney.command.money.pay` |
-| `/money withdraw <amount> [notes]` | Create check item(s) | `kmoney.command.money.withdraw` |
+| `/money withdraw <amount\|all> [notes]` | Create check item(s) (`all` withdraws full balance into one note) | `kmoney.command.money.withdraw` |
 | `/money admin <on\|off>` | Toggle your admin join message | `kmoney.command.money.admin` |
 | `/money add <player> <amount>` | Add money to a player | `kmoney.command.money.add` |
 | `/money remove <player> <amount>` | Remove money from a player | `kmoney.command.money.remove` |

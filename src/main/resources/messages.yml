@@ -211,5 +211,5 @@ usage:
   add: "<red>Usage: /money add <player> <amount>"
   set: "<red>Usage: /money set <player> <amount>"
   remove: "<red>Usage: /money remove <player> <amount>"
-  withdraw: "<red>Usage: /money withdraw <amount> [notes]"
+  withdraw: "<red>Usage: /money withdraw <amount|all> [notes]"
   admin: "<red>Usage: /money admin <on|off>"

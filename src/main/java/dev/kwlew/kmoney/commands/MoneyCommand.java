@@ -46,7 +46,7 @@ import java.util.List;
  * <p>
  * All monetary amounts support suffixes: k (thousand), m (million), b (billion), t (trillion), etc.
  */
-public final class MoneyCommand extends BaseCommand {
+public final class MoneyCommand extends StandardCommand {
 
     private final NamespacedKey key;
 
@@ -197,7 +197,7 @@ public final class MoneyCommand extends BaseCommand {
                                 })
                                 .then(Commands.argument("amount", StringArgumentType.word())
                                         .suggests((ctx, builder) -> {
-                                            List<String> suggestions = List.of("100", "1k", "5k", "10k", "100k");
+                                            List<String> suggestions = List.of("all", "100", "1k", "5k", "10k", "100k");
                                             suggestions.forEach(builder::suggest);
                                             return builder.buildFuture();
                                         })
@@ -250,7 +250,7 @@ public final class MoneyCommand extends BaseCommand {
                 .then(Commands.literal("withdraw")
                         .then(Commands.argument("amount", StringArgumentType.word())
                                 .suggests((ctx, builder) -> {
-                                    List<String> suggestions = List.of("100", "1k", "5k", "10k", "100k");
+                                    List<String> suggestions = List.of("all", "100", "1k", "5k", "10k", "100k");
                                     suggestions.forEach(builder::suggest);
                                     return builder.buildFuture();
                                 })
@@ -306,13 +306,23 @@ public final class MoneyCommand extends BaseCommand {
             return 0;
         }
 
-        amount = parsePositiveAmount(source.getSender(), amountInput);
-        if (amount == null) {
-            return 0;
+        BigDecimal playerBalance = economy.getBalance(player.getUniqueId());
+        if ("all".equalsIgnoreCase(amountInput)) {
+            amount = playerBalance;
+        } else {
+            amount = parsePositiveAmount(source.getSender(), amountInput);
+            if (amount == null) {
+                return 0;
+            }
         }
 
-        BigDecimal playerBalance = economy.getBalance(player.getUniqueId());
         BigDecimal total = amount.multiply(BigDecimal.valueOf(notes));
+        if (total.signum() <= 0) {
+            messages.send(source.getSender(), "money.invalid-amount",
+                    messages.placeholder("amount", amountInput)
+            );
+            return 0;
+        }
 
         if (total.compareTo(playerBalance) > 0) {
             messages.send(source.getSender(), "money.insufficient-funds",
@@ -368,6 +378,7 @@ public final class MoneyCommand extends BaseCommand {
 
         messages.send(source.getSender(), "check.success", messages.placeholder("amount", formatted));
 
+        Check.incrementChecksCreated();
         return true;
     }
 
