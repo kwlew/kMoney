@@ -1,9 +1,9 @@
-[![Modrinth Version](https://img.shields.io/modrinth/v/kmoney?style=for-the-badge)](https://modrinth.com/plugin/kmoney)
-[![Downloads](https://img.shields.io/modrinth/dt/kmoney?style=for-the-badge)](https://modrinth.com/plugin/kmoney)
+[![Modrinth Version](https://img.shields.io/modrinth/v/kmoney?style=for-the-badge&color=purple)](https://modrinth.com/plugin/kmoney)
+[![Downloads](https://img.shields.io/modrinth/dt/kmoney?style=for-the-badge&color=white)](https://modrinth.com/plugin/kmoney)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge)
 
-![Players](https://img.shields.io/bstats/players/31019?style=for-the-badge)
-![Servers](https://img.shields.io/bstats/servers/31019?style=for-the-badge)
+![Players](https://img.shields.io/bstats/players/31019?style=for-the-badge&color=pink)
+![Servers](https://img.shields.io/bstats/servers/31019?style=for-the-badge&color=cyan)
 # kMoney
 
 ### `kMoney` is a Minecraft plugin that provides an **economy**.
