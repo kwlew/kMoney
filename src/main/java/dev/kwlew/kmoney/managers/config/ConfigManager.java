@@ -38,6 +38,14 @@ public class ConfigManager {
         return config.get().getString("symbol", "$");
     }
 
+    public boolean isJoinMessageEnabled() {
+        return config.get().getBoolean("enable-join-message", true);
+    }
+
+    public boolean isUpdateWarningEnabled() {
+        return config.get().getBoolean("update-warning", true);
+    }
+
     public BigDecimal getDefaultBalance() {
         Object raw = config.get().get("default-balance");
         if (raw instanceof Number number) {

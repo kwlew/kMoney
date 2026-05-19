@@ -3,6 +3,7 @@ package dev.kwlew.kmoney.listeners.player;
 import dev.kwlew.kmoney.economy.EconomyManager;
 import dev.kwlew.kmoney.kernel.Inject;
 import dev.kwlew.kmoney.listeners.ListenerComponent;
+import dev.kwlew.kmoney.managers.config.ConfigManager;
 import dev.kwlew.kmoney.managers.config.BuildInfo;
 import dev.kwlew.kmoney.managers.updater.UpdateParser;
 import net.kyori.adventure.text.Component;
@@ -20,12 +21,14 @@ public class JoinListener implements ListenerComponent {
 
     private final EconomyManager economy;
     private final JavaPlugin plugin;
+    private final ConfigManager config;
     private final UpdateParser updateParser;
 
     @Inject
-    public JoinListener(JavaPlugin plugin, EconomyManager economy, UpdateParser updateParser) {
+    public JoinListener(JavaPlugin plugin, EconomyManager economy, ConfigManager config, UpdateParser updateParser) {
         this.plugin = plugin;
         this.economy = economy;
+        this.config = config;
         this.updateParser = updateParser;
     }
 
@@ -46,6 +49,10 @@ public class JoinListener implements ListenerComponent {
             return;
         }
 
+        if (!config.isJoinMessageEnabled()) {
+            return;
+        }
+
         if (!economy.adminMessage(player.getUniqueId())) {
             return;
         }
@@ -54,7 +61,7 @@ public class JoinListener implements ListenerComponent {
     }
 
     private Component buildAdminMessage() {
-        if (updateParser.isOutdated()) {
+        if (config.isUpdateWarningEnabled() && updateParser.isOutdated()) {
             String latestVersion = updateParser.getLatestVersion();
             String latestText = latestVersion == null ? "unknown" : latestVersion;
 

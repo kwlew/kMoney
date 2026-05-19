@@ -59,6 +59,10 @@ public class PlaceholderAPI extends PlaceholderExpansion {
             return Formatter.format(balance, symbol);
         }
 
+        if (params.equalsIgnoreCase("symbol")) {
+            return config.getCurrencySymbol();
+        }
+
         return null;
     }
 }

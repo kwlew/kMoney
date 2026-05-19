@@ -19,6 +19,7 @@ import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -29,6 +30,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Handles the /money command for balance queries, transfers, and money checks.
@@ -175,16 +177,14 @@ public final class MoneyCommand extends StandardCommand {
                                                 return 0;
                                             }
 
-                                            Player target = resolveOnlineTarget(
-                                                    ctx.getSource(),
-                                                    StringArgumentType.getString(ctx, "target")
-                                            );
+                                            String targetName = StringArgumentType.getString(ctx, "target");
+                                            OfflinePlayer target = resolveKnownTarget(ctx.getSource(), targetName);
                                             if (target == null) {
                                                 return 0;
                                             }
 
                                             String amount = StringArgumentType.getString(ctx, "amount");
-                                            return handleAdd(ctx.getSource(), target, amount);
+                                            return handleAdd(ctx.getSource(), target, targetName, amount);
                                         }))))
                 .then(Commands.literal("remove")
                         .requires(source -> hasPermission(source, "kmoney.command.money.remove"))
@@ -206,16 +206,14 @@ public final class MoneyCommand extends StandardCommand {
                                                 return 0;
                                             }
 
-                                            Player target = resolveOnlineTarget(
-                                                    ctx.getSource(),
-                                                    StringArgumentType.getString(ctx, "target")
-                                            );
+                                            String targetName = StringArgumentType.getString(ctx, "target");
+                                            OfflinePlayer target = resolveKnownTarget(ctx.getSource(), targetName);
                                             if (target == null) {
                                                 return 0;
                                             }
 
                                             String amount = StringArgumentType.getString(ctx, "amount");
-                                            return handleRemove(ctx.getSource(), target, amount);
+                                            return handleRemove(ctx.getSource(), target, targetName, amount);
                                         }))))
                 .then(Commands.literal("set")
                         .requires(source -> hasPermission(source, "kmoney.command.money.set"))
@@ -237,15 +235,13 @@ public final class MoneyCommand extends StandardCommand {
                                                 return 0;
                                             }
 
-                                            Player target = resolveOnlineTarget(
-                                                    ctx.getSource(),
-                                                    StringArgumentType.getString(ctx, "target")
-                                            );
+                                            String targetName = StringArgumentType.getString(ctx, "target");
+                                            OfflinePlayer target = resolveKnownTarget(ctx.getSource(), targetName);
                                             if (target == null) {
                                                 return 0;
                                             }
                                             String amount = StringArgumentType.getString(ctx, "amount");
-                                            return handleSet(ctx.getSource(), target, amount);
+                                            return handleSet(ctx.getSource(), target, targetName, amount);
                                         }))))
                 .then(Commands.literal("withdraw")
                         .then(Commands.argument("amount", StringArgumentType.word())
@@ -353,7 +349,8 @@ public final class MoneyCommand extends StandardCommand {
 
         String symbol = config.getCurrencySymbol();
         BigDecimal total = amount.multiply(BigDecimal.valueOf(notesAmount));
-        String formatted = Formatter.format(total, symbol);
+        String formattedPerNote = Formatter.format(amount, symbol);
+        String formattedTotal = Formatter.format(total, symbol);
 
         meta.displayName(
             messages.getRaw("check.create-name")
@@ -362,7 +359,7 @@ public final class MoneyCommand extends StandardCommand {
         );
 
         meta.lore(java.util.List.of(
-                messages.getRaw("check.create-value", messages.placeholder("amount", formatted))
+                messages.getRaw("check.create-value", messages.placeholder("amount", formattedPerNote))
                         .decoration(TextDecoration.ITALIC, false),
                 messages.getRaw("check.create-creator", messages.placeholder("player", source.getSender().getName()))
                         .decoration(TextDecoration.ITALIC, false)
@@ -376,7 +373,7 @@ public final class MoneyCommand extends StandardCommand {
         player.getInventory().addItem(check);
         economy.removeBalance(player.getUniqueId(), total);
 
-        messages.send(source.getSender(), "check.success", messages.placeholder("amount", formatted));
+        messages.send(source.getSender(), "check.success", messages.placeholder("amount", formattedTotal));
 
         Check.incrementChecksCreated();
         return true;
@@ -403,66 +400,81 @@ public final class MoneyCommand extends StandardCommand {
         );
     }
 
-    private int handleSet(CommandSourceStack source, Player target, String amountInput) {
+    private int handleSet(CommandSourceStack source, OfflinePlayer target, String targetLabel, String amountInput) {
         BigDecimal amount = parsePositiveAmount(source.getSender(), amountInput);
         if (amount == null) {
             return 0;
         }
 
-        economy.setBalance(target.getUniqueId(), amount);
+        UUID targetUuid = target.getUniqueId();
+        economy.createAccount(targetUuid);
+        economy.setBalance(targetUuid, amount);
         String formattedAmount = formatMoney(amount);
+        String displayName = resolveTargetName(target, targetLabel);
 
         messages.send(source.getSender(), "money.set",
-                messages.placeholder("player", target.getName()),
+                messages.placeholder("player", displayName),
                 messages.placeholder("amount", formattedAmount));
 
-        messages.send(target, "money.got-set",
-                messages.placeholder("player", source.getSender().getName()),
-                messages.placeholder("amount", formattedAmount)
-        );
+        if (target.isOnline() && target.getPlayer() != null) {
+            messages.send(target.getPlayer(), "money.got-set",
+                    messages.placeholder("player", source.getSender().getName()),
+                    messages.placeholder("amount", formattedAmount)
+            );
+        }
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private int handleRemove(CommandSourceStack source, Player target, String amountInput) {
+    private int handleRemove(CommandSourceStack source, OfflinePlayer target, String targetLabel, String amountInput) {
 
         BigDecimal amount = parsePositiveAmount(source.getSender(), amountInput);
         if (amount == null) {
             return 0;
         }
 
-        economy.removeBalance(target.getUniqueId(), amount);
+        UUID targetUuid = target.getUniqueId();
+        economy.createAccount(targetUuid);
+        economy.removeBalance(targetUuid, amount);
         String formattedAmount = formatMoney(amount);
+        String displayName = resolveTargetName(target, targetLabel);
 
         messages.send(source.getSender(), "money.removed",
-                messages.placeholder("player", target.getName()),
+                messages.placeholder("player", displayName),
                 messages.placeholder("amount", formattedAmount));
 
-        messages.send(target, "money.got-removed",
-                messages.placeholder("player", source.getSender().getName()),
-                messages.placeholder("amount", formattedAmount)
-        );
+        if (target.isOnline() && target.getPlayer() != null) {
+            messages.send(target.getPlayer(), "money.got-removed",
+                    messages.placeholder("player", source.getSender().getName()),
+                    messages.placeholder("amount", formattedAmount)
+            );
+        }
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private int handleAdd(CommandSourceStack source, Player target, String amountInput) {
+    private int handleAdd(CommandSourceStack source, OfflinePlayer target, String targetLabel, String amountInput) {
 
         BigDecimal amount = parsePositiveAmount(source.getSender(), amountInput);
         if (amount == null) {
             return 0;
         }
 
-        economy.addBalance(target.getUniqueId(), amount);
+        UUID targetUuid = target.getUniqueId();
+        economy.createAccount(targetUuid);
+        economy.addBalance(targetUuid, amount);
         String formattedAmount = formatMoney(amount);
+        String displayName = resolveTargetName(target, targetLabel);
         messages.send(source.getSender(), "money.added",
-                messages.placeholder("player", target.getName()),
+                messages.placeholder("player", displayName),
                 messages.placeholder("amount", formattedAmount)
         );
-        messages.send(target, "money.got-added",
-                messages.placeholder("player", source.getSender().getName()),
-                messages.placeholder("amount", formattedAmount)
-        );
+        if (target.isOnline() && target.getPlayer() != null) {
+            messages.send(target.getPlayer(), "money.got-added",
+                    messages.placeholder("player", source.getSender().getName()),
+                    messages.placeholder("amount", formattedAmount)
+            );
+        }
 
         return Command.SINGLE_SUCCESS;
     }
@@ -537,14 +549,26 @@ public final class MoneyCommand extends StandardCommand {
         return null;
     }
 
-    private Player resolveOnlineTarget(CommandSourceStack source, String targetName) {
+    private OfflinePlayer resolveKnownTarget(CommandSourceStack source, String targetName) {
         Player target = Bukkit.getPlayerExact(targetName);
         if (target != null) {
             return target;
         }
 
+        for (OfflinePlayer offline : Bukkit.getOfflinePlayers()) {
+            String name = offline.getName();
+            if (name != null && name.equalsIgnoreCase(targetName)) {
+                return offline;
+            }
+        }
+
         messages.send(source.getSender(), "player.not-found");
         return null;
+    }
+
+    private String resolveTargetName(OfflinePlayer target, String fallback) {
+        String name = target.getName();
+        return name != null ? name : fallback;
     }
 
     private BigDecimal parsePositiveAmount(CommandSender sender, String amountInput) {

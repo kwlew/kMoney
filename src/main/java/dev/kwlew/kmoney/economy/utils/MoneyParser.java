@@ -1,8 +1,11 @@
 package dev.kwlew.kmoney.economy.utils;
 
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.math.BigDecimal;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Parses money amounts with support for common suffixes.
@@ -26,6 +29,9 @@ import java.math.BigDecimal;
 public class MoneyParser {
 
     private static final BigDecimal THOUSAND = new BigDecimal("1000");
+    private static final Pattern AMOUNT_PATTERN = Pattern.compile(
+            "^(?<number>(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?)(?<suffix>[a-z]{0,3})$"
+    );
     private static final Map<String, BigDecimal> SUFFIXES = new LinkedHashMap<>();
 
     static {
@@ -52,32 +58,30 @@ public class MoneyParser {
      */
     public static BigDecimal parse(String input) throws NumberFormatException {
 
-        if (input == null || input.isEmpty()) {
+        if (input == null || input.trim().isEmpty()) {
             throw new NumberFormatException("Empty input");
         }
 
-        input = input.toLowerCase().replace(",", "").trim();
-        input = input.replaceAll("[^0-9a-z.]", "");
+        String normalized = input.trim().toLowerCase(Locale.ROOT);
+        Matcher matcher = AMOUNT_PATTERN.matcher(normalized);
 
-        if (input.isEmpty()) {
+        if (!matcher.matches()) {
             throw new NumberFormatException("Invalid input");
         }
 
-        for (Map.Entry<String, BigDecimal> entry : SUFFIXES.entrySet()) {
-            String suffix = entry.getKey();
+        String numberPart = matcher.group("number").replace(",", "");
+        String suffix = matcher.group("suffix");
 
-            if (input.endsWith(suffix)) {
-                String numberPart = input.substring(0, input.length() - suffix.length());
-
-                if (numberPart.isEmpty()) {
-                    throw new NumberFormatException("Invalid number format");
-                }
-
-                BigDecimal value = new BigDecimal(numberPart);
-                return value.multiply(entry.getValue());
-            }
+        BigDecimal value = new BigDecimal(numberPart);
+        if (suffix.isEmpty()) {
+            return value;
         }
 
-        return new BigDecimal(input);
+        BigDecimal multiplier = SUFFIXES.get(suffix);
+        if (multiplier == null) {
+            throw new NumberFormatException("Unknown suffix: " + suffix);
+        }
+
+        return value.multiply(multiplier);
     }
 }
