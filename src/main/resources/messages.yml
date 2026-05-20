@@ -112,6 +112,12 @@ money:
   # Shown when a player checks their own balance
   # Placeholder: <balance> = formatted balance amount
   balance-self: "<gray>Your balance is <green><balance>"
+
+  # Money top messages:
+  top-header: "<gray>Top balances (page <yellow><page><gray>):"
+  top-line: "<gray><rank>. <yellow><player><gray> - <green><amount>"
+  top-empty: "<red>No entries found for page <page>."
+  top-footer: "<dark_gray>Updates every <yellow><seconds><dark_gray> seconds."
   
   # Shown when a player checks another player's balance
   # Placeholders: <player> = target player name, <balance> = their balance
@@ -213,3 +219,4 @@ usage:
   remove: "<red>Usage: /money remove <player> <amount>"
   withdraw: "<red>Usage: /money withdraw <amount|all> [notes]"
   admin: "<red>Usage: /money admin <on|off>"
+  top: "<red>Usage: /money top [page]"

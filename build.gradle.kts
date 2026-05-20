@@ -25,7 +25,7 @@ java {
 
 tasks {
     runServer {
-        minecraftVersion(libs.versions.minecraft.get())
+        minecraftVersion("26.1.2")
         jvmArgs("-Xms4G", "-Xmx4G", "-Dcom.mojang.eula.agree=true")
     }
 

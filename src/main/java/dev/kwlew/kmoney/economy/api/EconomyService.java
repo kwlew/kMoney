@@ -1,6 +1,7 @@
 package dev.kwlew.kmoney.economy.api;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -82,4 +83,10 @@ public interface EconomyService {
      * @param uuid the player's unique ID
      */
     void createAccount(UUID uuid);
+
+    /**
+     *
+     * @return Returns a list of the richest players.
+     */
+    List<EconomyTopEntry> getTopEntries(int limit);
 }

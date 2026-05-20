@@ -1,6 +1,7 @@
 package dev.kwlew.kmoney.economy;
 
 import dev.kwlew.kmoney.economy.api.EconomyService;
+import dev.kwlew.kmoney.economy.api.EconomyTopEntry;
 import dev.kwlew.kmoney.economy.storage.EconomyStorage;
 import dev.kwlew.kmoney.kernel.LifecycleComponent;
 import dev.kwlew.kmoney.managers.config.ConfigManager;
@@ -8,10 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -34,9 +32,11 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
 
     private final Map<UUID, BigDecimal> cache = new ConcurrentHashMap<>();
     private final Set<UUID> dirty = ConcurrentHashMap.newKeySet();
+    private volatile List<EconomyTopEntry> topCache = List.of();
 
     private final JavaPlugin plugin;
     private BukkitTask autosaveTask;
+    private BukkitTask topUpdateTask;
 
     /**
      * Creates a new economy manager.
@@ -51,6 +51,7 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
         this.plugin = plugin;
 
         startAutosave();
+        startTopUpdater();
     }
 
     @Override
@@ -111,6 +112,24 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
         }
     }
 
+    @Override
+    public synchronized List<EconomyTopEntry> getTopEntries(int limit) {
+        if (limit <= 0) {
+            return List.of();
+        }
+
+        List<EconomyTopEntry> cached = topCache;
+        if (cached.isEmpty()) {
+            return List.of();
+        }
+
+        if (cached.size() <= limit) {
+            return cached;
+        }
+
+        return List.copyOf(cached.subList(0, limit));
+    }
+
     /**
      * Saves all modified accounts to persistent storage.
      * Runs synchronously and should only be called when necessary.
@@ -133,10 +152,40 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
         );
     }
 
+    private void startTopUpdater() {
+        rescheduleTopUpdater();
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, this::refreshTopCache);
+    }
+
+    public synchronized void rescheduleTopUpdater() {
+        if (topUpdateTask != null) {
+            topUpdateTask.cancel();
+        }
+
+        int intervalSeconds = config.getTopUpdateIntervalSeconds();
+        long intervalTicks = 20L * intervalSeconds;
+
+        topUpdateTask = plugin.getServer().getScheduler().runTaskTimerAsynchronously(
+                plugin,
+                this::refreshTopCache,
+                intervalTicks,
+                intervalTicks
+        );
+    }
+
+    private void refreshTopCache() {
+        saveDirty();
+        topCache = List.copyOf(storage.getTopEntries(Integer.MAX_VALUE));
+    }
+
     @Override
     public synchronized void shutdown() {
         if (autosaveTask != null) {
             autosaveTask.cancel();
+        }
+
+        if (topUpdateTask != null) {
+            topUpdateTask.cancel();
         }
 
         saveAll();

@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 public class ConfigManager {
     private static final BigDecimal DEFAULT_BALANCE = new BigDecimal("100.0");
+    private static final int DEFAULT_TOP_UPDATE_INTERVAL_SECONDS = 30;
 
     private final ConfigFile config;
     private final ConfigFile messages;
@@ -61,5 +62,10 @@ public class ConfigManager {
         }
 
         return DEFAULT_BALANCE;
+    }
+
+    public int getTopUpdateIntervalSeconds() {
+        int configured = config.get().getInt("top-update-interval-seconds", DEFAULT_TOP_UPDATE_INTERVAL_SECONDS);
+        return Math.max(1, configured);
     }
 }
