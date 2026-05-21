@@ -10,11 +10,6 @@
 # Example outputs: $100, €1.5K, £2.3M
 symbol: "$"
 
-# Currency name
-# The name displayed for the currency.
-# Examples: Coins, Money, Cash, Gold, etc.
-currency-name: "Money"
-
 # Admin options
 enable-join-message: true
 update-warning: true

@@ -352,7 +352,7 @@ public final class MoneyCommand extends StandardCommand {
             return 0;
         }
 
-        sender.sendMessage(messages.getRaw("money.top-header",
+        sender.sendMessage(messages.get("money.top-header",
                 messages.placeholder("page", String.valueOf(page))));
 
         int end = Math.min(start + TOP_PAGE_SIZE, top.size());

@@ -84,7 +84,17 @@
 # Prefix for the messages of the plugin.
 # Leave empty for no prefix.
 # Examples: "", "<red>[MyServer] "
-prefix: "<dark_gray>[<aqua>kMoney<dark_gray>] "
+prefix: "<bold><gradient:#23f30c:#00FBFF>kMoney</gradient></bold><dark_gray><bold> » "
+# To get the small font use:
+# https://mcutils.com/small-text-converter
+# Very useful website.
+
+# ============================================
+# FONT
+# ============================================
+# Font used by the messages.
+# Set to false to keep vanilla text.
+small-font: true
 
 # ============================================
 # PLAYER MESSAGES
@@ -115,7 +125,7 @@ money:
 
   # Money top messages:
   top-header: "<gray>Top balances (page <yellow><page><gray>):"
-  top-line: "<gray><rank>. <yellow><player><gray> - <green><amount>"
+  top-line: "<aqua>➤ <gray><rank>. <yellow><player><gray> - <green><amount>"
   top-empty: "<red>No entries found for page <page>."
   top-footer: "<dark_gray>Updates every <yellow><seconds><dark_gray> seconds."
   
