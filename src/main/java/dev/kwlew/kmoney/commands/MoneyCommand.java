@@ -34,6 +34,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -521,9 +522,21 @@ public final class MoneyCommand extends StandardCommand {
 
     private int handleRemove(CommandSourceStack source, OfflinePlayer target, String targetLabel, String amountInput) {
 
-        BigDecimal amount = parsePositiveAmount(source.getSender(), amountInput);
-        if (amount == null) {
+        BigDecimal amount;
+
+        if (Objects.equals(economy.getBalance(target.getUniqueId()), BigDecimal.ZERO)) {
+            messages.send(source.getSender(), "money.no-money",
+                    messages.placeholder("player", source.getSender().getName()));
             return 0;
+        }
+
+        if ("all".equalsIgnoreCase(amountInput)) {
+            amount = economy.getBalance(target.getUniqueId());
+        } else {
+            amount = parsePositiveAmount(source.getSender(), amountInput);
+            if (amount == null) {
+                return 0;
+            }
         }
 
         UUID targetUuid = target.getUniqueId();
@@ -558,6 +571,7 @@ public final class MoneyCommand extends StandardCommand {
         economy.addBalance(targetUuid, amount);
         String formattedAmount = formatMoney(amount);
         String displayName = resolveTargetName(target, targetLabel);
+
         messages.send(source.getSender(), "money.added",
                 messages.placeholder("player", displayName),
                 messages.placeholder("amount", formattedAmount)

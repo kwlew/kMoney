@@ -10,13 +10,18 @@
 # Example outputs: $100, €1.5K, £2.3M
 symbol: "$"
 
+# Currency name
+# The name displayed for the currency.
+# Examples: Coins, Money, Cash, Gold, etc.
+currency-name: "Money"
+
 # Admin options
 enable-join-message: true
 update-warning: true
 
 # /money top cache update interval (seconds)
 # Controls how often the top balances list is recalculated asynchronously.
-top-update-interval-seconds: 5
+top-update-interval-seconds: 300
 
 # Check Material
 # This config is for the item used to represent the check.

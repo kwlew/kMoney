@@ -157,6 +157,10 @@ money:
   # Shown to admin when they remove money from a player
   # Placeholders: <player> = target player, <amount> = amount removed
   removed: "<gray>Removed <green><amount><gray> from <yellow><player><gray>."
+
+  # Shown to admin when the player they are trying to remove from already has no money.
+  # Placeholders: <player> = target player
+  no-money: "<yellow><player><gray> already has no money!"
   
   # Shown to a player when money is removed from their balance
   # Placeholders: <player> = admin name, <amount> = amount removed
