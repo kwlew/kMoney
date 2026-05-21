@@ -25,18 +25,18 @@ import java.math.RoundingMode;
 public class Formatter {
     private static final String[] SUFFIXES = {
             "",
-            "K",   // 1e3
-            "M",   // 1e6
-            "B",   // 1e9
-            "T",   // 1e12
-            "Q",   // 1e15
-            "QQ",  // 1e18
-            "S",   // 1e21
-            "SS",  // 1e24
-            "OC",  // 1e27
-            "NO",  // 1e30
-            "DC",  // 1e33
-            "UDC"  // 1e36
+            "ᴋ",   // 1e3
+            "ᴍ",   // 1e6
+            "ʙ",   // 1e9
+            "ᴛ",   // 1e12
+            "ǫ",   // 1e15
+            "ǫǫ",  // 1e18
+            "ѕ",   // 1e21
+            "ѕѕ",  // 1e24
+            "ᴏᴄ",  // 1e27
+            "ɴᴏ",  // 1e30
+            "ᴅᴄ",  // 1e33
+            "ᴜᴅᴄ"  // 1e36
     };
     private static final BigDecimal THOUSAND = new BigDecimal("1000");
     private static final int DISPLAY_SCALE = 2;

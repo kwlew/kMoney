@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Manages all player-facing messages and notifications for the kMoney plugin.
@@ -56,12 +58,17 @@ import java.io.File;
  */
 public class MessageManager {
 
+    private static final String NORMAL_ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+    private static final String SMALL_ALPHABET = "ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀѕᴛᴜᴠᴡxʏᴢ";
+    private static final Map<Character, String> SMALL_FONT_MAP = createSmallFontMap();
+
     private final JavaPlugin plugin;
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
     private Component prefixComponent;
 
     private FileConfiguration config;
     private File file;
+    private boolean useSmallFont;
 
     /**
      * Creates a new message manager and loads messages from config.
@@ -89,8 +96,9 @@ public class MessageManager {
 
         config = YamlConfiguration.loadConfiguration(file);
 
+        useSmallFont = config.getBoolean("small-font", false);
         String prefix = config.getString("prefix", "");
-        prefixComponent = miniMessage.deserialize(prefix);
+        prefixComponent = miniMessage.deserialize(applyFont(prefix));
     }
 
     /**
@@ -113,8 +121,7 @@ public class MessageManager {
      * @return formatted Component with prefix, or error message if not found
      */
     public Component get(String path) {
-        String msg = config.getString(path);
-        if (msg == null) msg = "<red>Missing message: " + path;
+        String msg = resolveMessage(path);
 
         return prefixComponent.append(miniMessage.deserialize(msg));
     }
@@ -159,11 +166,10 @@ public class MessageManager {
      * @return formatted Component with prefix and substituted values
      */
     public Component get(String path, TagResolver... resolvers) {
-        String msg = config.getString(path);
-        if (msg == null) msg = "<red>Missing message: " + path;
+        String msg = resolveMessage(path);
 
         return prefixComponent.append(
-                miniMessage.deserialize(msg, TagResolver.resolver(resolvers))
+                miniMessage.deserialize(msg, resolveTags(resolvers))
         );
     }
 
@@ -175,8 +181,7 @@ public class MessageManager {
      * @return formatted Component without prefix, or error message if not found
      */
     public Component getRaw(String path) {
-        String msg = config.getString(path);
-        if (msg == null) msg = "<red>Missing message: " + path;
+        String msg = resolveMessage(path);
 
         return miniMessage.deserialize(msg);
     }
@@ -190,10 +195,9 @@ public class MessageManager {
      * @return formatted Component without prefix and with substituted values
      */
     public Component getRaw(String path, TagResolver... resolvers) {
-        String msg = config.getString(path);
-        if (msg == null) msg = "<red>Missing message: " + path;
+        String msg = resolveMessage(path);
 
-        return miniMessage.deserialize(msg, TagResolver.resolver(resolvers));
+        return miniMessage.deserialize(msg, resolveTags(resolvers));
     }
 
     // ======================
@@ -293,5 +297,54 @@ public class MessageManager {
      */
     public TagResolver placeholder(String key, String value) {
         return Placeholder.unparsed(key, value);
+    }
+
+    private static Map<Character, String> createSmallFontMap() {
+        Map<Character, String> mapping = new HashMap<>();
+        for (int i = 0; i < NORMAL_ALPHABET.length(); i++) {
+            char normal = NORMAL_ALPHABET.charAt(i);
+            String small = String.valueOf(SMALL_ALPHABET.charAt(i));
+            mapping.put(normal, small);
+            mapping.put(Character.toUpperCase(normal), small);
+        }
+        return mapping;
+    }
+
+    private String resolveMessage(String path) {
+        String msg = config.getString(path);
+        if (msg == null) {
+            msg = "<red>Missing message: " + path;
+        }
+        return applyFont(msg);
+    }
+
+    private TagResolver resolveTags(TagResolver... resolvers) {
+        return resolvers == null ? TagResolver.resolver() : TagResolver.resolver(resolvers);
+    }
+
+    private String applyFont(String message) {
+        if (!useSmallFont || message == null || message.isEmpty()) {
+            return message;
+        }
+
+        StringBuilder out = new StringBuilder(message.length());
+        int index = 0;
+        while (index < message.length()) {
+            char current = message.charAt(index);
+            if (current == '<' && (index == 0 || message.charAt(index - 1) != '\\')) {
+                int tagEnd = message.indexOf('>', index + 1);
+                if (tagEnd != -1) {
+                    out.append(message, index, tagEnd + 1);
+                    index = tagEnd + 1;
+                    continue;
+                }
+            }
+
+            String replacement = SMALL_FONT_MAP.get(current);
+            out.append(replacement != null ? replacement : current);
+            index++;
+        }
+
+        return out.toString();
     }
 }
