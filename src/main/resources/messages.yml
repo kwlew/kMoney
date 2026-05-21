@@ -112,6 +112,12 @@ money:
   # Shown when a player checks their own balance
   # Placeholder: <balance> = formatted balance amount
   balance-self: "<gray>Your balance is <green><balance>"
+
+  # Money top messages:
+  top-header: "<gray>Top balances (page <yellow><page><gray>):"
+  top-line: "<gray><rank>. <yellow><player><gray> - <green><amount>"
+  top-empty: "<red>No entries found for page <page>."
+  top-footer: "<dark_gray>Updates every <yellow><seconds><dark_gray> seconds."
   
   # Shown when a player checks another player's balance
   # Placeholders: <player> = target player name, <balance> = their balance
@@ -151,6 +157,10 @@ money:
   # Shown to admin when they remove money from a player
   # Placeholders: <player> = target player, <amount> = amount removed
   removed: "<gray>Removed <green><amount><gray> from <yellow><player><gray>."
+
+  # Shown to admin when the player they are trying to remove from already has no money.
+  # Placeholders: <player> = target player
+  no-money: "<yellow><player><gray> already has no money!"
   
   # Shown to a player when money is removed from their balance
   # Placeholders: <player> = admin name, <amount> = amount removed
@@ -213,3 +223,4 @@ usage:
   remove: "<red>Usage: /money remove <player> <amount>"
   withdraw: "<red>Usage: /money withdraw <amount|all> [notes]"
   admin: "<red>Usage: /money admin <on|off>"
+  top: "<red>Usage: /money top [page]"

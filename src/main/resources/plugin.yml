@@ -15,7 +15,7 @@ soft-depend:
 commands:
   money:
     description: View balances, transfer money, and manage checks.
-    usage: /money [balance|pay|add|remove|set|withdraw|admin|reload]
+    usage: /money [balance|top|pay|add|remove|set|withdraw|admin|reload]
     permission: kmoney.command.money
     aliases: balance
 
@@ -44,6 +44,9 @@ permissions:
   kmoney.command.money.pay:
     description: Allows using /money pay.
     default: true
+  kmoney.command.money.top:
+    description: Allows using /money top.
+    default: true
   kmoney.admin:
     description: Full access to admin money commands.
     default: op
@@ -56,3 +59,4 @@ permissions:
       kmoney.command.money.set: true
       kmoney.command.money.withdraw: true
       kmoney.command.money.pay: true
+      kmoney.command.money.top: true

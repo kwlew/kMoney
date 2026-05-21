@@ -50,10 +50,14 @@ public class MoneyValidator {
      * @throws IllegalArgumentException if the amount is zero or negative
      */
     public static void validatePositiveAmount(BigDecimal amount) throws IllegalArgumentException {
+        amountValidation(amount);
+    }
+
+    private static void amountValidation(BigDecimal amount) throws IllegalArgumentException {
         if (amount == null) {
             throw new IllegalArgumentException("Amount cannot be null");
         }
-        if (amount.signum() <= 0) {
+        if (amount.signum() < 1) {
             throw new IllegalArgumentException("Amount must be positive, got: " + amount);
         }
     }

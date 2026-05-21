@@ -1,5 +1,6 @@
 package dev.kwlew.kmoney.economy.storage;
 
+import dev.kwlew.kmoney.economy.api.EconomyTopEntry;
 import dev.kwlew.kmoney.managers.exceptions.PlayerSaveException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -8,9 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -50,6 +49,39 @@ public class EcoPersistence implements EconomyStorage {
             FileConfiguration config = getCachedConfig(uuid);
             return readBalance(config);
         }
+    }
+
+    /**
+     * @param limit Amount of entries we get.
+     * @return Returns the top entries
+     */
+    @Override
+    public List<EconomyTopEntry> getTopEntries(int limit) {
+        if (limit <= 0) {
+            return List.of();
+        }
+
+        File[] files = folder.listFiles((dir, name) -> name.endsWith(".yml"));
+        if (files == null || files.length == 0) {
+            return List.of();
+        }
+
+        return Arrays.stream(files)
+                .map(file -> {
+                    String name = file.getName();
+                    String uuidPart = name.substring(0, name.length() - 4); // remove .yml
+                    try {
+                        UUID uuid = UUID.fromString(uuidPart);
+                        BigDecimal balance = getExistingBalance(uuid).orElse(BigDecimal.ZERO);
+                        return new EconomyTopEntry(uuid, balance);
+                    } catch (IllegalArgumentException ignored) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(EconomyTopEntry::balance).reversed())
+                .limit(limit)
+                .toList();
     }
 
     @Override
@@ -140,7 +172,6 @@ public class EcoPersistence implements EconomyStorage {
     private BigDecimal readBalance(FileConfiguration config) {
         Object raw = config.get("balance");
         return switch (raw) {
-            case null -> BigDecimal.ZERO;
             case Number number -> BigDecimal.valueOf(number.doubleValue());
             case String value -> {
                 try {
@@ -149,7 +180,7 @@ public class EcoPersistence implements EconomyStorage {
                     yield BigDecimal.ZERO;
                 }
             }
-            default -> BigDecimal.ZERO;
+            case null, default -> BigDecimal.ZERO;
         };
     }
 
