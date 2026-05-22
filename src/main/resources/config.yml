@@ -14,6 +14,10 @@ symbol: "$"
 enable-join-message: true
 update-warning: true
 
+# /money top cache update interval (seconds)
+# Controls how often the top balances list is recalculated asynchronously.
+top-update-interval-seconds: 300
+
 # Check Material
 # This config is for the item used to represent the check.
 # Common items: EMERALD, PAPER, DIAMOND, GOLD_INGOT

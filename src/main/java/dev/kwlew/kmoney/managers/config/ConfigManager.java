@@ -7,13 +7,16 @@ import java.math.BigDecimal;
 
 public class ConfigManager {
     private static final BigDecimal DEFAULT_BALANCE = new BigDecimal("100.0");
+    private static final int DEFAULT_TOP_UPDATE_INTERVAL_SECONDS = 30;
 
     private final ConfigFile config;
     private final ConfigFile messages;
+    private final ConfigFile sounds;
 
     public ConfigManager(JavaPlugin plugin) {
         this.config = new ConfigFile(plugin, "config.yml");
         this.messages = new ConfigFile(plugin, "messages.yml");
+        this.sounds = new ConfigFile(plugin, "sounds.yml");
     }
 
     public ConfigFile config() {
@@ -24,14 +27,20 @@ public class ConfigManager {
         return messages;
     }
 
+    public ConfigFile sounds() {
+        return sounds;
+    }
+
     public void reloadAll() {
         config.reload();
         messages.reload();
+        sounds.reload();
     }
 
     public void saveAll() {
         config.save();
         messages.save();
+        sounds.save();
     }
 
     public String getCurrencySymbol() {
@@ -61,5 +70,10 @@ public class ConfigManager {
         }
 
         return DEFAULT_BALANCE;
+    }
+
+    public int getTopUpdateIntervalSeconds() {
+        int configured = config.get().getInt("top-update-interval-seconds", DEFAULT_TOP_UPDATE_INTERVAL_SECONDS);
+        return Math.max(1, configured);
     }
 }

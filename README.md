@@ -77,6 +77,7 @@ Examples:
 - `default-balance` - starting balance for new accounts
 - `enable-join-message` - The message admins get when joining the server.
 - `update-warning` - Warns about missing updates.
+- `top-update-interval-seconds` - How often /money top refreshes its cached list.
 
 `src/main/resources/messages.yml`
 

@@ -1,15 +1,21 @@
 package dev.kwlew.kmoney.commands;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import dev.kwlew.kmoney.economy.EconomyManager;
 import dev.kwlew.kmoney.economy.api.EconomyService;
+import dev.kwlew.kmoney.economy.api.EconomyTopEntry;
 import dev.kwlew.kmoney.economy.utils.Formatter;
 import dev.kwlew.kmoney.economy.utils.MoneyValidator;
 import dev.kwlew.kmoney.kernel.Inject;
 import dev.kwlew.kmoney.managers.check.Check;
 import dev.kwlew.kmoney.managers.check.CheckSettings;
 import dev.kwlew.kmoney.managers.config.ConfigManager;
+import dev.kwlew.kmoney.managers.sound.SoundFactory;
+import dev.kwlew.kmoney.managers.sound.SoundType;
 import dev.kwlew.kmoney.managers.utils.MessageManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -20,7 +26,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -30,6 +35,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -51,15 +57,23 @@ import java.util.UUID;
 public final class MoneyCommand extends StandardCommand {
 
     private final NamespacedKey key;
+    private final SoundFactory soundFactory;
+
+    private static final int TOP_PAGE_SIZE = 10;
+    private static final List<String> EXAMPLE_AMOUNTS = List.of(
+            "all", "100", "1K", "500k", "1M", "1B", "1T", "1Q"
+    );
 
     @Inject
     public MoneyCommand(JavaPlugin plugin,
                         EconomyService economy,
                         MessageManager messages,
                         ConfigManager config,
-                        CheckSettings checkSettings) {
+                        CheckSettings checkSettings,
+                        SoundFactory soundFactory) {
         super(plugin, economy, messages, config, checkSettings);
         this.key = new NamespacedKey(plugin, "money");
+        this.soundFactory = soundFactory;
     }
 
     @Override
@@ -72,208 +86,295 @@ public final class MoneyCommand extends StandardCommand {
     private LiteralCommandNode<CommandSourceStack> build() {
         return Commands.literal("money")
                 .executes(ctx -> {
-                    if (!requirePermission(ctx.getSource(), "kmoney.command.money")) {
-                        return 0;
+                    if (requirePermission(ctx.getSource(), "kmoney.command.money")) {
+                        sendSelfBalance(ctx.getSource());
+                        return Command.SINGLE_SUCCESS;
                     }
 
-                    sendSelfBalance(ctx.getSource());
-                    return Command.SINGLE_SUCCESS;
+                    return 0;
                 })
-                .then(Commands.literal("admin")
-                        .requires(source -> hasPermission(source, "kmoney.command.money.admin"))
+                .then(buildTopCommand())
+                .then(buildAdminCommand())
+                .then(buildBalanceCommand())
+                .then(buildReloadCommand())
+                .then(buildPayCommand())
+                .then(buildAddCommand())
+                .then(buildRemoveCommand())
+                .then(buildSetCommand())
+                .then(buildWithdrawCommand())
+                .build();
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> buildTopCommand() {
+        return Commands.literal("top")
+                .requires(source -> hasPermission(source, "kmoney.command.money.top"))
+                .executes(ctx -> {
+                    if (requirePermission(ctx.getSource(), "kmoney.command.money.top")) {
+                        return handleTop(ctx.getSource(), 1);
+                    }
+
+                    return 0;
+                })
+                .then(Commands.argument("page", IntegerArgumentType.integer(1))
                         .executes(ctx -> {
-                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.admin")) {
-                                return 0;
+                            if (requirePermission(ctx.getSource(), "kmoney.command.money.top")) {
+                                int page = IntegerArgumentType.getInteger(ctx, "page");
+                                return handleTop(ctx.getSource(), page);
                             }
 
-                            messages.send(ctx.getSource().getSender(), "usage.admin");
+                            return 0;
+                        }));
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> buildAdminCommand() {
+        return Commands.literal("admin")
+                .requires(source -> hasPermission(source, "kmoney.command.money.admin"))
+                .executes(ctx -> {
+                    if (requirePermission(ctx.getSource(), "kmoney.command.money.admin")) {
+                        messages.send(ctx.getSource().getSender(), "usage.admin");
+                    }
+                    return 0;
+                })
+                .then(Commands.literal("on")
+                        .executes(ctx -> {
+                            if (requirePermission(ctx.getSource(), "kmoney.command.money.admin")) {
+                                return handleAdminToggle(ctx.getSource(), true);
+                            }
+
+                            return 0;
+                        }))
+                .then(Commands.literal("off")
+                        .executes(ctx -> {
+                            if (requirePermission(ctx.getSource(), "kmoney.command.money.admin")) {
+                                return handleAdminToggle(ctx.getSource(), false);
+                            }
+
+                            return 0;
+                        }));
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> buildBalanceCommand() {
+        return Commands.literal("balance")
+                .executes(ctx -> {
+                    if (requirePermission(ctx.getSource(), "kmoney.command.money")) {
+                        sendSelfBalance(ctx.getSource());
+                        return Command.SINGLE_SUCCESS;
+                    }
+
+                    return 0;
+                })
+                .then(Commands.argument("target", ArgumentTypes.player())
+                        .executes(ctx -> {
+                            if (requirePermission(ctx.getSource(), "kmoney.command.money")) {
+                                Player target = ctx.getArgument("target", PlayerSelectorArgumentResolver.class)
+                                        .resolve(ctx.getSource())
+                                        .getFirst();
+                                sendBalance(ctx.getSource().getSender(), target);
+                                return Command.SINGLE_SUCCESS;
+                            }
+
+                            return 0;
+                        }));
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> buildReloadCommand() {
+        return Commands.literal("reload")
+                .requires(source -> hasPermission(source, "kmoney.command.money.reload"))
+                .executes(ctx -> {
+                    if (requirePermission(ctx.getSource(), "kmoney.command.money.reload")) {
+                        config.reloadAll();
+                        messages.reload();
+                        checkSettings.reload();
+                        if (economy instanceof EconomyManager manager) {
+                            manager.rescheduleTopUpdater();
+                        }
+                        messages.send(ctx.getSource().getSender(), "money.reloaded");
+                        soundFactory.reload();
+                        soundFactory.play(getPlayer(ctx.getSource()), SoundType.RELOAD);
+                        return Command.SINGLE_SUCCESS;
+                    }
+
+                    return 0;
+                });
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> buildPayCommand() {
+        return Commands.literal("pay")
+                .then(Commands.argument("target", ArgumentTypes.player())
+                        .then(Commands.argument("amount", StringArgumentType.word())
+                                .suggests((@SuppressWarnings("unused") var ctx, var builder) -> {
+                                    EXAMPLE_AMOUNTS.forEach(builder::suggest);
+                                    return builder.buildFuture();
+                                })
+                                .executes(ctx -> {
+                                    if (requirePermission(ctx.getSource(), "kmoney.command.money.pay")) {
+                                        Player target = ctx.getArgument("target", PlayerSelectorArgumentResolver.class)
+                                                .resolve(ctx.getSource())
+                                                .getFirst();
+                                        return handlePay(ctx.getSource(), target, StringArgumentType.getString(ctx, "amount"));
+                                    }
+
+                                    return 0;
+                                })));
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> buildAddCommand() {
+        return Commands.literal("add")
+                .requires(source -> hasPermission(source, "kmoney.command.money.add"))
+                .then(Commands.argument("target", StringArgumentType.word())
+                        .suggests((@SuppressWarnings("unused") var ctx, var builder) -> {
+                            for (Player player : Bukkit.getOnlinePlayers()) {
+                                builder.suggest(player.getName());
+                            }
+                            return builder.buildFuture();
+                        })
+                        .then(Commands.argument("amount", StringArgumentType.word())
+                                .suggests((@SuppressWarnings("unused") var ctx, var builder) -> {
+                                    EXAMPLE_AMOUNTS.forEach(builder::suggest);
+                                    return builder.buildFuture();
+                                })
+                                .executes(ctx -> {
+                                    if (requirePermission(ctx.getSource(), "kmoney.command.money.add")) {
+                                        String targetName = StringArgumentType.getString(ctx, "target");
+                                        OfflinePlayer target = resolveKnownTarget(ctx.getSource(), targetName);
+                                        if (target == null) {
+                                            return 0;
+                                        }
+
+                                        String amount = StringArgumentType.getString(ctx, "amount");
+                                        return handleAdd(ctx.getSource(), target, targetName, amount);
+                                    }
+
+                                    return 0;
+                                })));
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> buildRemoveCommand() {
+        return Commands.literal("remove")
+                .requires(source -> hasPermission(source, "kmoney.command.money.remove"))
+                .then(Commands.argument("target", StringArgumentType.word())
+                        .suggests((@SuppressWarnings("unused") var ctx, var builder) -> {
+                            for (Player player : Bukkit.getOnlinePlayers()) {
+                                builder.suggest(player.getName());
+                            }
+                            return builder.buildFuture();
+                        })
+                        .then(Commands.argument("amount", StringArgumentType.word())
+                                .suggests((@SuppressWarnings("unused") var ctx, var builder) -> {
+                                    EXAMPLE_AMOUNTS.forEach(builder::suggest);
+                                    return builder.buildFuture();
+                                })
+                                .executes(ctx -> {
+                                    if (requirePermission(ctx.getSource(), "kmoney.command.money.remove")) {
+                                        String targetName = StringArgumentType.getString(ctx, "target");
+                                        OfflinePlayer target = resolveKnownTarget(ctx.getSource(), targetName);
+                                        if (target == null) {
+                                            return 0;
+                                        }
+
+                                        String amount = StringArgumentType.getString(ctx, "amount");
+                                        return handleRemove(ctx.getSource(), target, targetName, amount);
+                                    }
+
+                                    return 0;
+                                })));
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> buildSetCommand() {
+        return Commands.literal("set")
+                .requires(source -> hasPermission(source, "kmoney.command.money.set"))
+                .then(Commands.argument("target", StringArgumentType.word())
+                        .suggests((@SuppressWarnings("unused") var ctx, var builder) -> {
+                            for (Player player : Bukkit.getOnlinePlayers()) {
+                                builder.suggest(player.getName());
+                            }
+                            return builder.buildFuture();
+                        })
+                        .then(Commands.argument("amount", StringArgumentType.word())
+                                .suggests((@SuppressWarnings("unused") var ctx, var builder) -> {
+                                    EXAMPLE_AMOUNTS.forEach(builder::suggest);
+                                    return builder.buildFuture();
+                                })
+                                .executes(ctx -> {
+                                    if (requirePermission(ctx.getSource(), "kmoney.command.money.set")) {
+                                        String targetName = StringArgumentType.getString(ctx, "target");
+                                        OfflinePlayer target = resolveKnownTarget(ctx.getSource(), targetName);
+                                        if (target == null) {
+                                            return 0;
+                                        }
+                                        String amount = StringArgumentType.getString(ctx, "amount");
+                                        return handleSet(ctx.getSource(), target, targetName, amount);
+                                    }
+
+                                    return 0;
+                                })));
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> buildWithdrawCommand() {
+        return Commands.literal("withdraw")
+                .then(Commands.argument("amount", StringArgumentType.word())
+                        .suggests((@SuppressWarnings("unused") var ctx, var builder) -> {
+                            EXAMPLE_AMOUNTS.forEach(builder::suggest);
+                            return builder.buildFuture();
+                        })
+                        .executes(ctx -> {
+                            if (requirePermission(ctx.getSource(), "kmoney.command.money.withdraw")) {
+                                String amount = StringArgumentType.getString(ctx, "amount");
+                                return handleWithdraw(ctx.getSource(), amount, null);
+                            }
+
                             return 0;
                         })
-                        .then(Commands.literal("on")
-                                .executes(ctx -> {
-                                    if (!requirePermission(ctx.getSource(), "kmoney.command.money.admin")) {
-                                        return 0;
-                                    }
-
-                                    return handleAdminToggle(ctx.getSource(), true);
-                                }))
-                        .then(Commands.literal("off")
-                                .executes(ctx -> {
-                                    if (!requirePermission(ctx.getSource(), "kmoney.command.money.admin")) {
-                                        return 0;
-                                    }
-
-                                    return handleAdminToggle(ctx.getSource(), false);
-                                })))
-                .then(Commands.literal("balance")
-                        .executes(ctx -> {
-                            if (!requirePermission(ctx.getSource(), "kmoney.command.money")) {
-                                return 0;
-                            }
-
-                            sendSelfBalance(ctx.getSource());
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(Commands.argument("target", ArgumentTypes.player())
-                                .executes(ctx -> {
-                                    if (!requirePermission(ctx.getSource(), "kmoney.command.money")) {
-                                        return 0;
-                                    }
-
-                                    Player target = ctx.getArgument("target", PlayerSelectorArgumentResolver.class)
-                                            .resolve(ctx.getSource())
-                                            .getFirst();
-                                    sendBalance(ctx.getSource().getSender(), target);
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(Commands.literal("reload")
-                        .requires(source -> hasPermission(source, "kmoney.command.money.reload"))
-                        .executes(ctx -> {
-                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.reload")) {
-                                return 0;
-                            }
-
-                            config.reloadAll();
-                            messages.reload();
-                            checkSettings.reload();
-                            messages.send(ctx.getSource().getSender(), "money.reloaded");
-                            return Command.SINGLE_SUCCESS;
-                        }))
-                .then(Commands.literal("pay")
-                        .then(Commands.argument("target", ArgumentTypes.player())
-                                .then(Commands.argument("amount", StringArgumentType.word())
-                                        .suggests((ctx, builder) -> {
-                                            List<String> suggestions = List.of("100", "1k", "5k", "10k", "100k");
-                                            suggestions.forEach(builder::suggest);
-                                            return builder.buildFuture();
-                                        })
-                                        .executes(ctx -> {
-                                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.pay")) {
-                                                return 0;
-                                            }
-
-                                            Player target = ctx.getArgument("target", PlayerSelectorArgumentResolver.class)
-                                                    .resolve(ctx.getSource())
-                                                    .getFirst();
-                                            return handlePay(ctx.getSource(), target, StringArgumentType.getString(ctx, "amount"));
-                                        }))))
-                .then(Commands.literal("add")
-                        .requires(source -> hasPermission(source, "kmoney.command.money.add"))
-                        .then(Commands.argument("target", StringArgumentType.word())
-                                .suggests((ctx, builder) -> {
-                                    for (Player player : Bukkit.getOnlinePlayers()) {
-                                        builder.suggest(player.getName());
-                                    }
-                                    return builder.buildFuture();
-                                })
-                                .then(Commands.argument("amount", StringArgumentType.word())
-                                        .suggests((ctx, builder) -> {
-                                            List<String> suggestions = List.of("100", "1k", "5k", "10k", "100k");
-                                            suggestions.forEach(builder::suggest);
-                                            return builder.buildFuture();
-                                        })
-                                        .executes(ctx -> {
-                                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.add")) {
-                                                return 0;
-                                            }
-
-                                            String targetName = StringArgumentType.getString(ctx, "target");
-                                            OfflinePlayer target = resolveKnownTarget(ctx.getSource(), targetName);
-                                            if (target == null) {
-                                                return 0;
-                                            }
-
-                                            String amount = StringArgumentType.getString(ctx, "amount");
-                                            return handleAdd(ctx.getSource(), target, targetName, amount);
-                                        }))))
-                .then(Commands.literal("remove")
-                        .requires(source -> hasPermission(source, "kmoney.command.money.remove"))
-                        .then(Commands.argument("target", StringArgumentType.word())
-                                .suggests((ctx, builder) -> {
-                                    for (Player player : Bukkit.getOnlinePlayers()) {
-                                        builder.suggest(player.getName());
-                                    }
-                                    return builder.buildFuture();
-                                })
-                                .then(Commands.argument("amount", StringArgumentType.word())
-                                        .suggests((ctx, builder) -> {
-                                            List<String> suggestions = List.of("all", "100", "1k", "5k", "10k", "100k");
-                                            suggestions.forEach(builder::suggest);
-                                            return builder.buildFuture();
-                                        })
-                                        .executes(ctx -> {
-                                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.remove")) {
-                                                return 0;
-                                            }
-
-                                            String targetName = StringArgumentType.getString(ctx, "target");
-                                            OfflinePlayer target = resolveKnownTarget(ctx.getSource(), targetName);
-                                            if (target == null) {
-                                                return 0;
-                                            }
-
-                                            String amount = StringArgumentType.getString(ctx, "amount");
-                                            return handleRemove(ctx.getSource(), target, targetName, amount);
-                                        }))))
-                .then(Commands.literal("set")
-                        .requires(source -> hasPermission(source, "kmoney.command.money.set"))
-                        .then(Commands.argument("target", StringArgumentType.word())
-                                .suggests((ctx, builder) -> {
-                                    for (Player player : Bukkit.getOnlinePlayers()) {
-                                        builder.suggest(player.getName());
-                                    }
-                                    return builder.buildFuture();
-                                })
-                                .then(Commands.argument("amount", StringArgumentType.word())
-                                        .suggests((ctx, builder) -> {
-                                            List<String> suggestions = List.of("100", "1k", "5k", "10k", "100k");
-                                            suggestions.forEach(builder::suggest);
-                                            return builder.buildFuture();
-                                        })
-                                        .executes(ctx -> {
-                                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.set")) {
-                                                return 0;
-                                            }
-
-                                            String targetName = StringArgumentType.getString(ctx, "target");
-                                            OfflinePlayer target = resolveKnownTarget(ctx.getSource(), targetName);
-                                            if (target == null) {
-                                                return 0;
-                                            }
-                                            String amount = StringArgumentType.getString(ctx, "amount");
-                                            return handleSet(ctx.getSource(), target, targetName, amount);
-                                        }))))
-                .then(Commands.literal("withdraw")
-                        .then(Commands.argument("amount", StringArgumentType.word())
-                                .suggests((ctx, builder) -> {
-                                    List<String> suggestions = List.of("all", "100", "1k", "5k", "10k", "100k");
+                        .then(Commands.argument("notes", StringArgumentType.word())
+                                .suggests((@SuppressWarnings("unused") var ctx, var builder) -> {
+                                    List<String> suggestions = List.of("2", "4", "8", "16");
                                     suggestions.forEach(builder::suggest);
                                     return builder.buildFuture();
                                 })
                                 .executes(ctx -> {
-                                    if (!requirePermission(ctx.getSource(), "kmoney.command.money.withdraw")) {
-                                        return 0;
+                                    if (requirePermission(ctx.getSource(), "kmoney.command.money.withdraw")) {
+                                        String amount = StringArgumentType.getString(ctx, "amount");
+                                        String notes = StringArgumentType.getString(ctx, "notes");
+                                        return handleWithdraw(ctx.getSource(), amount, notes);
                                     }
 
-                                    String amount = StringArgumentType.getString(ctx, "amount");
-                                    return handleWithdraw(ctx.getSource(), amount, null);
-                                })
-                                .then(Commands.argument("notes", StringArgumentType.word())
-                                        .suggests((ctx, builder) -> {
-                                            List<String> suggestions = List.of("2", "4", "8", "16");
-                                            suggestions.forEach(builder::suggest);
-                                            return builder.buildFuture();
-                                        })
-                                        .executes(ctx -> {
-                                            if (!requirePermission(ctx.getSource(), "kmoney.command.money.withdraw")) {
-                                                return 0;
-                                            }
+                                    return 0;
+                                })));
+    }
 
-                                            String amount = StringArgumentType.getString(ctx, "amount");
-                                            String notes = StringArgumentType.getString(ctx, "notes");
-                                            return handleWithdraw(ctx.getSource(), amount, notes);
-                                        }))))
-                .build();
+    private int handleTop(CommandSourceStack source, int page) {
+        int fetchCount = page * TOP_PAGE_SIZE;
+        int start = (page - 1) * TOP_PAGE_SIZE;
+
+        CommandSender sender = source.getSender();
+        int updateIntervalSeconds = config.getTopUpdateIntervalSeconds();
+
+        List<EconomyTopEntry> top = economy.getTopEntries(fetchCount);
+        if (top.isEmpty() || start >= top.size()) {
+            sender.sendMessage(messages.getRaw("money.top-empty",
+                    messages.placeholder("page", String.valueOf(page))));
+            sender.sendMessage(messages.getRaw("money.top-footer",
+                    messages.placeholder("seconds", String.valueOf(updateIntervalSeconds))));
+            return 0;
+        }
+
+        sender.sendMessage(messages.get("money.top-header",
+                messages.placeholder("page", String.valueOf(page))));
+
+        int end = Math.min(start + TOP_PAGE_SIZE, top.size());
+        for (int i = start; i < end; i++) {
+            EconomyTopEntry entry = top.get(i);
+            sender.sendMessage(messages.getRaw("money.top-line",
+                    messages.placeholder("rank", String.valueOf(i + 1)),
+                    messages.placeholder("player", resolveTopPlayerName(entry.uuid())),
+                    messages.placeholder("amount", formatMoney(entry.balance()))
+            ));
+        }
+
+        sender.sendMessage(messages.getRaw("money.top-footer",
+                messages.placeholder("seconds", String.valueOf(updateIntervalSeconds))));
+        soundFactory.play(getPlayer(source), SoundType.TOP);
+        return Command.SINGLE_SUCCESS;
     }
 
     private int handleWithdraw(CommandSourceStack source, String amountInput, String notesAmount) {
@@ -369,7 +470,7 @@ public final class MoneyCommand extends StandardCommand {
 
         check.setItemMeta(meta);
 
-        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
+        soundFactory.play(player, SoundType.WITHDRAW);
         player.getInventory().addItem(check);
         economy.removeBalance(player.getUniqueId(), total);
 
@@ -422,15 +523,31 @@ public final class MoneyCommand extends StandardCommand {
                     messages.placeholder("amount", formattedAmount)
             );
         }
+        soundFactory.play(getPlayer(source), SoundType.SET);
+        if (target.isOnline() && target.getPlayer() != null) {
+            soundFactory.play(target.getPlayer(), SoundType.SET);
+        }
 
         return Command.SINGLE_SUCCESS;
     }
 
     private int handleRemove(CommandSourceStack source, OfflinePlayer target, String targetLabel, String amountInput) {
 
-        BigDecimal amount = parsePositiveAmount(source.getSender(), amountInput);
-        if (amount == null) {
+        BigDecimal amount;
+
+        if (Objects.equals(economy.getBalance(target.getUniqueId()), BigDecimal.ZERO)) {
+            messages.send(source.getSender(), "money.no-money",
+                    messages.placeholder("player", source.getSender().getName()));
             return 0;
+        }
+
+        if ("all".equalsIgnoreCase(amountInput)) {
+            amount = economy.getBalance(target.getUniqueId());
+        } else {
+            amount = parsePositiveAmount(source.getSender(), amountInput);
+            if (amount == null) {
+                return 0;
+            }
         }
 
         UUID targetUuid = target.getUniqueId();
@@ -449,6 +566,10 @@ public final class MoneyCommand extends StandardCommand {
                     messages.placeholder("amount", formattedAmount)
             );
         }
+        soundFactory.play(getPlayer(source), SoundType.REMOVE);
+        if (target.isOnline() && target.getPlayer() != null) {
+            soundFactory.play(target.getPlayer(), SoundType.REMOVE);
+        }
 
         return Command.SINGLE_SUCCESS;
     }
@@ -465,6 +586,7 @@ public final class MoneyCommand extends StandardCommand {
         economy.addBalance(targetUuid, amount);
         String formattedAmount = formatMoney(amount);
         String displayName = resolveTargetName(target, targetLabel);
+
         messages.send(source.getSender(), "money.added",
                 messages.placeholder("player", displayName),
                 messages.placeholder("amount", formattedAmount)
@@ -474,6 +596,10 @@ public final class MoneyCommand extends StandardCommand {
                     messages.placeholder("player", source.getSender().getName()),
                     messages.placeholder("amount", formattedAmount)
             );
+        }
+        soundFactory.play(getPlayer(source), SoundType.ADD);
+        if (target.isOnline() && target.getPlayer() != null) {
+            soundFactory.play(target.getPlayer(), SoundType.ADD);
         }
 
         return Command.SINGLE_SUCCESS;
@@ -520,6 +646,8 @@ public final class MoneyCommand extends StandardCommand {
                 messages.placeholder("player", sender.getName()),
                 messages.placeholder("amount", formattedAmount)
         );
+        soundFactory.play(sender, SoundType.PAY);
+        soundFactory.play(target, SoundType.PAY);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -564,6 +692,17 @@ public final class MoneyCommand extends StandardCommand {
 
         messages.send(source.getSender(), "player.not-found");
         return null;
+    }
+
+    private String resolveTopPlayerName(UUID uuid) {
+        OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+        String name = player.getName();
+        if (name != null && !name.isBlank()) {
+            return name;
+        }
+
+        String raw = uuid.toString();
+        return raw.substring(0, Math.min(8, raw.length()));
     }
 
     private String resolveTargetName(OfflinePlayer target, String fallback) {

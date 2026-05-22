@@ -7,8 +7,9 @@ import dev.kwlew.kmoney.listeners.ListenerComponent;
 import dev.kwlew.kmoney.managers.utils.MessageManager;
 import dev.kwlew.kmoney.managers.config.ConfigManager;
 import dev.kwlew.kmoney.managers.check.Check;
+import dev.kwlew.kmoney.managers.sound.SoundFactory;
+import dev.kwlew.kmoney.managers.sound.SoundType;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -26,14 +27,20 @@ public class CheckClaimListener implements ListenerComponent {
     private final EconomyManager economy;
     private final ConfigManager config;
     private final MessageManager messages;
+    private final SoundFactory soundFactory;
 
     @Inject
-    public CheckClaimListener(JavaPlugin plugin, EconomyManager economy, ConfigManager config, MessageManager messages) {
+    public CheckClaimListener(JavaPlugin plugin,
+                              EconomyManager economy,
+                              ConfigManager config,
+                              MessageManager messages,
+                              SoundFactory soundFactory) {
         this.key = new NamespacedKey(plugin, "money");
         this.plugin = plugin;
         this.economy = economy;
         this.config = config;
         this.messages = messages;
+        this.soundFactory = soundFactory;
     }
 
     @Override
@@ -73,7 +80,7 @@ public class CheckClaimListener implements ListenerComponent {
 
             String formatted = Formatter.format(total, config.getCurrencySymbol());
 
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+            soundFactory.play(player, SoundType.REDEEM);
             messages.send(player, "check.redeem",
                     messages.placeholder("amount", formatted));
             return;
@@ -85,7 +92,7 @@ public class CheckClaimListener implements ListenerComponent {
 
         String formatted = Formatter.format(value, config.getCurrencySymbol());
 
-        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+        soundFactory.play(player, SoundType.REDEEM);
 
         messages.send(player, "check.redeem",
                 messages.placeholder("amount", formatted));
