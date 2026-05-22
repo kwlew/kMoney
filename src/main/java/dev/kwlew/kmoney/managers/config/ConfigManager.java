@@ -11,10 +11,12 @@ public class ConfigManager {
 
     private final ConfigFile config;
     private final ConfigFile messages;
+    private final ConfigFile sounds;
 
     public ConfigManager(JavaPlugin plugin) {
         this.config = new ConfigFile(plugin, "config.yml");
         this.messages = new ConfigFile(plugin, "messages.yml");
+        this.sounds = new ConfigFile(plugin, "sounds.yml");
     }
 
     public ConfigFile config() {
@@ -25,14 +27,20 @@ public class ConfigManager {
         return messages;
     }
 
+    public ConfigFile sounds() {
+        return sounds;
+    }
+
     public void reloadAll() {
         config.reload();
         messages.reload();
+        sounds.reload();
     }
 
     public void saveAll() {
         config.save();
         messages.save();
+        sounds.save();
     }
 
     public String getCurrencySymbol() {

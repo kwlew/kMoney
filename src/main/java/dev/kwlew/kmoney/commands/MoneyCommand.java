@@ -14,6 +14,8 @@ import dev.kwlew.kmoney.kernel.Inject;
 import dev.kwlew.kmoney.managers.check.Check;
 import dev.kwlew.kmoney.managers.check.CheckSettings;
 import dev.kwlew.kmoney.managers.config.ConfigManager;
+import dev.kwlew.kmoney.managers.sound.SoundFactory;
+import dev.kwlew.kmoney.managers.sound.SoundType;
 import dev.kwlew.kmoney.managers.utils.MessageManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -24,7 +26,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -56,6 +57,7 @@ import java.util.UUID;
 public final class MoneyCommand extends StandardCommand {
 
     private final NamespacedKey key;
+    private final SoundFactory soundFactory;
 
     private static final int TOP_PAGE_SIZE = 10;
     private static final List<String> EXAMPLE_AMOUNTS = List.of(
@@ -67,9 +69,11 @@ public final class MoneyCommand extends StandardCommand {
                         EconomyService economy,
                         MessageManager messages,
                         ConfigManager config,
-                        CheckSettings checkSettings) {
+                        CheckSettings checkSettings,
+                        SoundFactory soundFactory) {
         super(plugin, economy, messages, config, checkSettings);
         this.key = new NamespacedKey(plugin, "money");
+        this.soundFactory = soundFactory;
     }
 
     @Override
@@ -185,6 +189,8 @@ public final class MoneyCommand extends StandardCommand {
                             manager.rescheduleTopUpdater();
                         }
                         messages.send(ctx.getSource().getSender(), "money.reloaded");
+                        soundFactory.reload();
+                        soundFactory.play(getPlayer(ctx.getSource()), SoundType.RELOAD);
                         return Command.SINGLE_SUCCESS;
                     }
 
@@ -367,6 +373,7 @@ public final class MoneyCommand extends StandardCommand {
 
         sender.sendMessage(messages.getRaw("money.top-footer",
                 messages.placeholder("seconds", String.valueOf(updateIntervalSeconds))));
+        soundFactory.play(getPlayer(source), SoundType.TOP);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -463,7 +470,7 @@ public final class MoneyCommand extends StandardCommand {
 
         check.setItemMeta(meta);
 
-        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
+        soundFactory.play(player, SoundType.WITHDRAW);
         player.getInventory().addItem(check);
         economy.removeBalance(player.getUniqueId(), total);
 
@@ -516,6 +523,10 @@ public final class MoneyCommand extends StandardCommand {
                     messages.placeholder("amount", formattedAmount)
             );
         }
+        soundFactory.play(getPlayer(source), SoundType.SET);
+        if (target.isOnline() && target.getPlayer() != null) {
+            soundFactory.play(target.getPlayer(), SoundType.SET);
+        }
 
         return Command.SINGLE_SUCCESS;
     }
@@ -555,6 +566,10 @@ public final class MoneyCommand extends StandardCommand {
                     messages.placeholder("amount", formattedAmount)
             );
         }
+        soundFactory.play(getPlayer(source), SoundType.REMOVE);
+        if (target.isOnline() && target.getPlayer() != null) {
+            soundFactory.play(target.getPlayer(), SoundType.REMOVE);
+        }
 
         return Command.SINGLE_SUCCESS;
     }
@@ -581,6 +596,10 @@ public final class MoneyCommand extends StandardCommand {
                     messages.placeholder("player", source.getSender().getName()),
                     messages.placeholder("amount", formattedAmount)
             );
+        }
+        soundFactory.play(getPlayer(source), SoundType.ADD);
+        if (target.isOnline() && target.getPlayer() != null) {
+            soundFactory.play(target.getPlayer(), SoundType.ADD);
         }
 
         return Command.SINGLE_SUCCESS;
@@ -627,6 +646,8 @@ public final class MoneyCommand extends StandardCommand {
                 messages.placeholder("player", sender.getName()),
                 messages.placeholder("amount", formattedAmount)
         );
+        soundFactory.play(sender, SoundType.PAY);
+        soundFactory.play(target, SoundType.PAY);
 
         return Command.SINGLE_SUCCESS;
     }
