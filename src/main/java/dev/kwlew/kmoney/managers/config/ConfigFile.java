@@ -23,12 +23,7 @@ public class ConfigFile {
 
     private void load() {
         file = new File(plugin.getDataFolder(), name);
-
-        if (!file.exists()) {
-            //noinspection ResultOfMethodCallIgnored
-            file.getParentFile().mkdirs();
-            plugin.saveResource(name, false);
-        }
+        ensureFileExists();
 
         config = YamlConfiguration.loadConfiguration(file);
     }
@@ -38,7 +33,18 @@ public class ConfigFile {
     }
 
     public void reload() {
+        ensureFileExists();
         config = YamlConfiguration.loadConfiguration(file);
+    }
+
+    private void ensureFileExists() {
+        if (file.exists()) {
+            return;
+        }
+
+        //noinspection ResultOfMethodCallIgnored
+        file.getParentFile().mkdirs();
+        plugin.saveResource(name, false);
     }
 
     public void save() {

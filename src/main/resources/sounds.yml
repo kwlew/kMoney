@@ -1,0 +1,65 @@
+# ============================================
+# kMoney Sounds Configuration
+# ============================================
+# This file controls all user-facing messages and notifications in the kMoney plugin.
+#
+# Use this website to fetch sounds: https://minecraftsounds.com
+#
+# If disabled disables the entire sound functionality.
+enabled: true
+#
+sounds:
+  # Configurations for each sound:
+  # name:
+  #   enabled: true/false
+  #   sound: (Minecraft sounds)
+  #   pitch: 0.1 to 2.0
+  #   volume: placeholder
+  #
+  pay:
+    enabled: true
+    sound: "block.note_block.pling"
+    pitch: 1.0
+    volume: 1.0
+
+  add:
+    enabled: true
+    sound: "block.note_block.chime"
+    pitch: 1.3
+    volume: 0.7
+
+  set:
+    enabled: true
+    sound: "block.note_block.pling"
+    pitch: 1.0
+    volume: 0.7
+
+  remove:
+    enabled: true
+    sound: "block.note_block.chime"
+    pitch: 0.6
+    volume: 0.7
+
+  top:
+    enabled: true
+    sound: "block.note_block.pling"
+    pitch: 1.0
+    volume: 1.0
+
+  reload:
+    enabled: true
+    sound: "entity.player.levelup"
+    pitch: 1.0
+    volume: 1.0
+
+  withdraw:
+    enabled: true
+    sound: "entity.item.pickup"
+    pitch: 1.2
+    volume: 0.7
+
+  redeem:
+    enabled: true
+    sound: "entity.player.levelup"
+    pitch: 1.10
+    volume: 0.5
