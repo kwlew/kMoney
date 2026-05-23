@@ -14,6 +14,7 @@
 - Withdrawable paper checks that players can redeem
 - **PlaceholderAPI** support
 - **Vault** support
+- **VaultUnlocked** support
 
 ## Features
 
