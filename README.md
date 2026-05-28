@@ -8,10 +8,10 @@
 
 ### `kMoney` is a Minecraft plugin that provides an **economy**.
 
-- BigDecimal-based balances (precision-safe money math)
+- Precise balances (precision-safe money math)
 - Player-to-player payments
 - Admin add/remove/set tools
-- Withdrawable paper checks that players can redeem
+- Withdrawable checks.
 - **PlaceholderAPI** support
 - **Vault** support
 - **VaultUnlocked** support
