@@ -23,6 +23,18 @@ import java.util.regex.Pattern;
  * - no: 1,000,000,000,000,000,000,000,000,000,000 (nonillion)
  * - dc: 1,000,000,000,000,000,000,000,000,000,000,000 (decillion)
  * - udc: 1,000,000,000,000,000,000,000,000,000,000,000,000 (undecillion)
+ * - ddc: 1e39 (duodecillion)
+ * - tdc: 1e42 (tredecillion)
+ * - qtdc: 1e45 (quattuordecillion)
+ * - qndc: 1e48 (quindecillion)
+ * - sxdc: 1e51 (sexdecillion)
+ * - spdc: 1e54 (septendecillion)
+ * - ocdc: 1e57 (octodecillion)
+ * - nodc: 1e60 (novemdecillion)
+ * - vg: 1e63 (vigintillion)
+ * - uvg: 1e66 (unvigintillion)
+ * - dvg: 1e69 (duovigintillion)
+ * - tvg: 1e72 (trevigintillion)
  * <p>
  * Examples: "100", "1k", "5.5m", "2.5b", "1,000"
  */
@@ -30,11 +42,23 @@ public class MoneyParser {
 
     private static final BigDecimal THOUSAND = new BigDecimal("1000");
     private static final Pattern AMOUNT_PATTERN = Pattern.compile(
-            "^(?<number>(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?)(?<suffix>[a-z]{0,3})$"
+            "^(?<number>(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?)(?<suffix>[a-z]{0,4})$"
     );
     private static final Map<String, BigDecimal> SUFFIXES = new LinkedHashMap<>();
 
     static {
+        SUFFIXES.put("tvg", THOUSAND.pow(24)); // 1e72
+        SUFFIXES.put("dvg", THOUSAND.pow(23)); // 1e69
+        SUFFIXES.put("uvg", THOUSAND.pow(22)); // 1e66
+        SUFFIXES.put("vg",  THOUSAND.pow(21)); // 1e63
+        SUFFIXES.put("nodc", THOUSAND.pow(20)); // 1e60
+        SUFFIXES.put("ocdc", THOUSAND.pow(19)); // 1e57
+        SUFFIXES.put("spdc", THOUSAND.pow(18)); // 1e54
+        SUFFIXES.put("sxdc", THOUSAND.pow(17)); // 1e51
+        SUFFIXES.put("qndc", THOUSAND.pow(16)); // 1e48
+        SUFFIXES.put("qtdc", THOUSAND.pow(15)); // 1e45
+        SUFFIXES.put("tdc", THOUSAND.pow(14)); // 1e42
+        SUFFIXES.put("ddc", THOUSAND.pow(13)); // 1e39
         SUFFIXES.put("udc", THOUSAND.pow(12)); // 1e36
         SUFFIXES.put("dc",  THOUSAND.pow(11)); // 1e33
         SUFFIXES.put("no",  THOUSAND.pow(10)); // 1e30

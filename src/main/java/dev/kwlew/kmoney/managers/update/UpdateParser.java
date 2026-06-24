@@ -1,4 +1,4 @@
-package dev.kwlew.kmoney.managers.updater;
+package dev.kwlew.kmoney.managers.update;
 
 import dev.kwlew.kmoney.kernel.LifecycleComponent;
 import dev.kwlew.kmoney.managers.config.BuildInfo;
