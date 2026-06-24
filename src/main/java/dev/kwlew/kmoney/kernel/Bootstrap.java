@@ -19,7 +19,7 @@ import dev.kwlew.kmoney.listeners.player.QuitListener;
 import dev.kwlew.kmoney.managers.check.CheckHandler;
 import dev.kwlew.kmoney.managers.check.CheckSettings;
 import dev.kwlew.kmoney.managers.config.ConfigManager;
-import dev.kwlew.kmoney.managers.updater.UpdateParser;
+import dev.kwlew.kmoney.managers.update.UpdateParser;
 import dev.kwlew.kmoney.managers.utils.MessageManager;
 import org.bukkit.plugin.java.JavaPlugin;
 

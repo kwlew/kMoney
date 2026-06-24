@@ -35,7 +35,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -61,6 +60,9 @@ public final class MoneyCommand extends StandardCommand {
 
     private static final int TOP_PAGE_SIZE = 10;
     private static final List<String> EXAMPLE_AMOUNTS = List.of(
+            "100", "1K", "500k", "1M", "1B", "1T", "1Q"
+    );
+    private static final List<String> EXAMPLE_AMOUNTS_ALL = List.of(
             "all", "100", "1K", "500k", "1M", "1B", "1T", "1Q"
     );
 
@@ -261,7 +263,7 @@ public final class MoneyCommand extends StandardCommand {
                         })
                         .then(Commands.argument("amount", StringArgumentType.word())
                                 .suggests((@SuppressWarnings("unused") var ctx, var builder) -> {
-                                    EXAMPLE_AMOUNTS.forEach(builder::suggest);
+                                    EXAMPLE_AMOUNTS_ALL.forEach(builder::suggest);
                                     return builder.buildFuture();
                                 })
                                 .executes(ctx -> {
@@ -314,7 +316,7 @@ public final class MoneyCommand extends StandardCommand {
         return Commands.literal("withdraw")
                 .then(Commands.argument("amount", StringArgumentType.word())
                         .suggests((@SuppressWarnings("unused") var ctx, var builder) -> {
-                            EXAMPLE_AMOUNTS.forEach(builder::suggest);
+                            EXAMPLE_AMOUNTS_ALL.forEach(builder::suggest);
                             return builder.buildFuture();
                         })
                         .executes(ctx -> {
@@ -343,7 +345,7 @@ public final class MoneyCommand extends StandardCommand {
     }
 
     private int handleTop(CommandSourceStack source, int page) {
-        int fetchCount = page * TOP_PAGE_SIZE;
+        int fetchCount = (int) Math.min((long) page * TOP_PAGE_SIZE, Integer.MAX_VALUE);
         int start = (page - 1) * TOP_PAGE_SIZE;
 
         CommandSender sender = source.getSender();
@@ -534,15 +536,16 @@ public final class MoneyCommand extends StandardCommand {
     private int handleRemove(CommandSourceStack source, OfflinePlayer target, String targetLabel, String amountInput) {
 
         BigDecimal amount;
+        BigDecimal targetBalance = economy.getBalance(target.getUniqueId());
 
-        if (Objects.equals(economy.getBalance(target.getUniqueId()), BigDecimal.ZERO)) {
+        if (targetBalance.compareTo(BigDecimal.ZERO) == 0) {
             messages.send(source.getSender(), "money.no-money",
-                    messages.placeholder("player", source.getSender().getName()));
+                    messages.placeholder("player", resolveTargetName(target, targetLabel)));
             return 0;
         }
 
         if ("all".equalsIgnoreCase(amountInput)) {
-            amount = economy.getBalance(target.getUniqueId());
+            amount = targetBalance;
         } else {
             amount = parsePositiveAmount(source.getSender(), amountInput);
             if (amount == null) {

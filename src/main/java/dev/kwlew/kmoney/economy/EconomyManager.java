@@ -113,7 +113,7 @@ public class EconomyManager implements EconomyService, LifecycleComponent {
     }
 
     @Override
-    public synchronized List<EconomyTopEntry> getTopEntries(int limit) {
+    public List<EconomyTopEntry> getTopEntries(int limit) {
         if (limit <= 0) {
             return List.of();
         }

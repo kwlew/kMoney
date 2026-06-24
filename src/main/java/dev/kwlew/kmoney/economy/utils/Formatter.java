@@ -19,6 +19,18 @@ import java.math.RoundingMode;
  * - NO: nonillions (1e30)
  * - DC: decillions (1e33)
  * - UDC: undecillions (1e36)
+ * - DDC: duodecillions (1e39)
+ * - TDC: tredecillions (1e42)
+ * - QTDC: quattuordecillions (1e45)
+ * - QNDC: quindecillions (1e48)
+ * - SXDC: sexdecillions (1e51)
+ * - SPDC: septendecillions (1e54)
+ * - OCDC: octodecillions (1e57)
+ * - NODC: novemdecillions (1e60)
+ * - VG: vigintillions (1e63)
+ * - UVG: unvigintillions (1e66)
+ * - DVG: duovigintillions (1e69)
+ * - TVG: trevigintillions (1e72)
  * <p>
  * Examples: "$100", "$1.5K", "$2.3M", "-$500"
  */
@@ -36,7 +48,19 @@ public class Formatter {
             "ᴏᴄ",  // 1e27
             "ɴᴏ",  // 1e30
             "ᴅᴄ",  // 1e33
-            "ᴜᴅᴄ"  // 1e36
+            "ᴜᴅᴄ", // 1e36
+            "ᴅᴅᴄ", // 1e39
+            "ᴛᴅᴄ", // 1e42
+            "ǫᴛᴅᴄ", // 1e45
+            "ǫɴᴅᴄ", // 1e48
+            "ѕxᴅᴄ", // 1e51
+            "ѕᴘᴅᴄ", // 1e54
+            "ᴏᴄᴅᴄ", // 1e57
+            "ɴᴏᴅᴄ", // 1e60
+            "ᴠɢ",  // 1e63
+            "ᴜᴠɢ", // 1e66
+            "ᴅᴠɢ", // 1e69
+            "ᴛᴠɢ"  // 1e72
     };
     private static final BigDecimal THOUSAND = new BigDecimal("1000");
     private static final int DISPLAY_SCALE = 2;

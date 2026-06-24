@@ -5,7 +5,7 @@ import dev.kwlew.kmoney.kernel.Inject;
 import dev.kwlew.kmoney.listeners.ListenerComponent;
 import dev.kwlew.kmoney.managers.config.ConfigManager;
 import dev.kwlew.kmoney.managers.config.BuildInfo;
-import dev.kwlew.kmoney.managers.updater.UpdateParser;
+import dev.kwlew.kmoney.managers.update.UpdateParser;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;

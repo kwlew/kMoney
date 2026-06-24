@@ -331,8 +331,8 @@ public class MessageManager {
         int index = 0;
         while (index < message.length()) {
             char current = message.charAt(index);
-            if (current == '<' && (index == 0 || message.charAt(index - 1) != '\\')) {
-                int tagEnd = message.indexOf('>', index + 1);
+            if (current == '<') {
+                int tagEnd = findTagEnd(message, index);
                 if (tagEnd != -1) {
                     out.append(message, index, tagEnd + 1);
                     index = tagEnd + 1;
@@ -346,5 +346,20 @@ public class MessageManager {
         }
 
         return out.toString();
+    }
+
+    private static int findTagEnd(String message, int start) {
+        boolean inSingleQuote = false;
+        for (int i = start + 1; i < message.length(); i++) {
+            char c = message.charAt(i);
+            if (c == '\'') {
+                inSingleQuote = !inSingleQuote;
+            } else if (c == '>' && !inSingleQuote) {
+                return i;
+            } else if ((c == '\n' || c == '\r') && !inSingleQuote) {
+                return -1;
+            }
+        }
+        return -1;
     }
 }
